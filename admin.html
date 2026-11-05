@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Redaksi IGV Press</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .admin-top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding-block:20px;border-bottom:1px solid var(--line)}
+  .login{max-width:420px;margin:60px auto}
+  td select,td input{padding:6px 8px;font-size:.85rem}
+  .pill{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--tint);white-space:nowrap}
+  .admin-sec{padding-block:28px;display:grid;gap:16px}
+  .row-actions{display:flex;gap:6px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="admin-top">
+    <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"></span><span><b>Redaksi</b><small>Dasbor penerbitan</small></span></a>
+    <button class="btn btn-ghost btn-sm" id="logout" hidden>Keluar</button>
+  </div>
+
+  <form class="panel form login" id="loginForm" hidden>
+    <h2>Masuk redaksi</h2>
+    <div class="field"><label for="lEmail">Email</label><input id="lEmail" type="email" required autocomplete="username"></div>
+    <div class="field"><label for="lPass">Kata sandi</label><input id="lPass" type="password" required autocomplete="current-password"></div>
+    <button class="btn btn-primary" type="submit">Masuk</button>
+    <div id="lMsg"></div>
+  </form>
+
+  <div id="notConfigured" class="alert err" style="margin-top:30px" hidden>Supabase belum dikonfigurasi. Isi SUPABASE_URL dan SUPABASE_ANON_KEY di js/config.js.</div>
+
+  <div id="app" hidden>
+    <div class="tabs" role="tablist" style="margin-top:20px">
+      <button class="tab" role="tab" aria-selected="true" data-p="aNaskah">Naskah masuk</button>
+      <button class="tab" role="tab" aria-selected="false" data-p="aBuku">Katalog buku</button>
+      <button class="tab" role="tab" aria-selected="false" data-p="aCall">Call for chapter</button>
+    </div>
+
+    <section class="admin-sec" id="aNaskah">
+      <div class="cat-tools"><input id="sSearch" type="search" placeholder="Cari nama, judul, atau kode"><select id="sFilter" style="max-width:220px"><option value="">Semua status</option></select></div>
+      <div class="table-wrap"><table><thead><tr><th>Kode</th><th>Penulis & naskah</th><th>Paket</th><th>Status & catatan</th><th></th></tr></thead><tbody id="sRows"></tbody></table></div>
+    </section>
+
+    <section class="admin-sec" id="aBuku" hidden>
+      <form class="panel form" id="bookForm">
+        <h3>Tambah buku</h3>
+        <div class="two"><div class="field"><label for="bTitle">Judul</label><input id="bTitle" name="title" required></div><div class="field"><label for="bAuthors">Penulis</label><input id="bAuthors" name="authors" required></div></div>
+        <div class="two"><div class="field"><label for="bCat">Kategori</label><input id="bCat" name="category" placeholder="Kesehatan"></div><div class="field"><label for="bType">Jenis</label><input id="bType" name="book_type" placeholder="Buku referensi"></div></div>
+        <div class="two"><div class="field"><label for="bIsbn">ISBN</label><input id="bIsbn" name="isbn"></div><div class="field"><label for="bYear">Tahun</label><input id="bYear" name="year" type="number"></div></div>
+        <div class="two"><div class="field"><label for="bPages">Halaman</label><input id="bPages" name="pages" type="number"></div><div class="field"><label for="bColor">Warna sampul</label><input id="bColor" name="cover_color" type="color" value="#0F4C45" style="height:44px"></div></div>
+        <div class="two"><div class="field"><label for="bCover">URL gambar sampul (opsional)</label><input id="bCover" name="cover_url" type="url"></div><div class="field"><label for="bBuy">URL toko / Google Books (opsional)</label><input id="bBuy" name="buy_url" type="url"></div></div>
+        <button class="btn btn-primary" type="submit">Simpan buku</button><div id="bMsg"></div>
+      </form>
+      <div class="table-wrap"><table><thead><tr><th>Judul</th><th>ISBN</th><th>Tahun</th><th></th></tr></thead><tbody id="bRows"></tbody></table></div>
+    </section>
+
+    <section class="admin-sec" id="aCall" hidden>
+      <form class="panel form" id="callForm">
+        <h3>Buka call for chapter</h3>
+        <div class="two"><div class="field"><label for="kTitle">Tema buku</label><input id="kTitle" name="title" required></div><div class="field"><label for="kField">Bidang</label><input id="kField" name="field"></div></div>
+        <div class="field"><label for="kDesc">Deskripsi</label><textarea id="kDesc" name="description"></textarea></div>
+        <div class="two"><div class="field"><label for="kDeadline">Batas akhir</label><input id="kDeadline" name="deadline" type="date" required></div><div class="field"><label for="kQuota">Kuota bab</label><input id="kQuota" name="quota" type="number" value="15"></div></div>
+        <div class="field"><label for="kFee">Biaya per penulis (Rp)</label><input id="kFee" name="fee" type="number" value="450000"></div>
+        <button class="btn btn-primary" type="submit">Buka call</button><div id="kMsg"></div>
+      </form>
+      <div class="table-wrap"><table><thead><tr><th>Tema</th><th>Batas</th><th>Terisi</th><th></th></tr></thead><tbody id="kRows"></tbody></table></div>
+    </section>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

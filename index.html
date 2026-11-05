@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>IGV Press</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="IGV Press — penerbit buku akademik PT. Inovasi Global Ventures. Terbitkan buku ajar, referensi, monograf, dan book chapter ber-ISBN untuk BKD dan PAK dosen.">
+<meta property="og:title" content="IGV Press — Penerbit Buku Akademik">
+<meta property="og:description" content="Buku ber-ISBN untuk dosen: harga transparan, simulasi angka kredit, dan lacak naskah real-time.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="wrap nav" aria-label="Menu utama">
+    <a class="brand" href="#beranda" aria-label="Beranda IGV Press">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span><b data-brand="name">IGV Press</b><small data-brand="company">PT. Inovasi Global Ventures</small></span>
+    </a>
+    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="navLinks">Menu</button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#profil">Profil</a></li>
+      <li><a href="#layanan">Layanan</a></li>
+      <li><a href="#harga">Harga</a></li>
+      <li><a href="#studio">Studio Penulis</a></li>
+      <li><a href="#katalog">Katalog</a></li>
+      <li><a href="#call">Call for Chapter</a></li>
+      <li><a href="#lacak">Lacak Naskah</a></li>
+      <li><a class="btn btn-primary btn-sm" href="#kirim">Kirim Naskah</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+<!-- ================= HERO ================= -->
+<section class="hero" id="beranda">
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <span class="eyebrow">Penerbit buku akademik · ISBN Perpusnas RI</span>
+      <h1>Naskah Anda layak menjadi <em>buku ber-ISBN</em> yang terhitung di BKD dan PAK.</h1>
+      <p class="lead">IGV Press menerbitkan buku ajar, referensi, monograf, dan book chapter untuk dosen dan peneliti. Harga terbuka sejak awal, angka kredit bisa disimulasikan, dan setiap tahap naskah bisa Anda lacak sendiri.</p>
+      <div class="try-box" aria-label="Pratinjau buku Anda">
+        <label for="heroTitle">Coba ketik judul naskah Anda, lalu lihat sampul dan halaman katalognya</label>
+        <div class="try-row">
+          <input id="heroTitle" maxlength="90" value="Asuhan Keperawatan Ibu Hamil dengan Preeklamsia" aria-label="Judul naskah">
+          <input id="heroAuthor" maxlength="60" value="Nama Anda, M.Kep." aria-label="Nama penulis">
+        </div>
+      </div>
+      <div class="btn-row">
+        <a class="btn btn-primary" href="#kirim">Kirim naskah sekarang</a>
+        <a class="btn btn-ghost" href="#studio">Hitung biaya terbit</a>
+      </div>
+      <div class="facts"><span>ISBN resmi Perpusnas</span><span>Cicilan 3× tanpa bunga</span><span>Royalti 20%</span><span>Garansi ISBN atau uang kembali</span></div>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <div class="cover hero-cover" id="heroCover">
+        <span class="c-type">Buku Referensi</span>
+        <span class="c-title" id="coverTitle">Asuhan Keperawatan Ibu Hamil dengan Preeklamsia</span>
+        <span class="c-author" id="coverAuthor">Nama Anda, M.Kep.</span>
+        <span class="c-pub" data-brand="name">IGV Press</span>
+      </div>
+      <div class="kdt">
+        <h4>Katalog Dalam Terbitan (KDT)</h4>
+        <p><b id="kdtAuthor">Nama Anda, M.Kep.</b><br><span id="kdtTitle">Asuhan Keperawatan Ibu Hamil dengan Preeklamsia</span> / <span id="kdtAuthor2">Nama Anda, M.Kep.</span>. — Jakarta : <span data-brand="name">IGV Press</span>, 2026.<br>xii, 212 hlm. ; 15,5 × 23 cm.</p>
+        <p class="isbn mono">ISBN <span data-brand="isbn">978-634-XXXX</span>-XX-X</p>
+        <div class="barcode"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PROFIL ================= -->
+<section class="band alt" id="profil">
+  <div class="wrap profile-grid">
+    <div class="stack">
+      <span class="eyebrow">Profil</span>
+      <h2>Penerbit yang dibangun dari kebutuhan dosen.</h2>
+      <p class="lead"><span data-brand="name">IGV Press</span> adalah unit penerbitan <span data-brand="company">PT. Inovasi Global Ventures</span>. Kami tahu menulis buku hanyalah separuh pekerjaan: buku juga harus lolos syarat ISBN Perpusnas, sesuai kaidah buku perguruan tinggi, dan bisa dipakai untuk BKD, PAK, maupun akreditasi program studi.</p>
+      <p class="lead">Karena itu semua layanan kami dirancang untuk menghilangkan ketidakpastian: berapa biayanya, berapa lama prosesnya, dan berapa nilainya untuk karier akademik Anda.</p>
+    </div>
+    <div class="stack">
+      <div class="vm"><h3>Visi</h3><p>Menjadi penerbit akademik pilihan dosen Indonesia yang paling transparan dan paling cepat dalam membawa hasil riset menjadi buku bermutu.</p></div>
+      <div class="vm"><h3>Misi</h3>
+        <ul>
+          <li>Menerbitkan buku ilmiah sesuai standar Perpusnas dan kaidah buku perguruan tinggi.</li>
+          <li>Mendampingi dosen dari naskah mentah sampai buku terbit dan terjual.</li>
+          <li>Membuka akses kolaborasi lintas kampus melalui program book chapter.</li>
+          <li>Memberi royalti dan laporan penjualan yang jelas setiap semester.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="wrap" style="margin-top:48px">
+    <div class="sec-head"><span class="eyebrow">Mengapa IGV Press</span><h2>Enam hal yang jarang Anda temukan di penerbit lain.</h2></div>
+    <div class="grid g3">
+      <article class="card"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg></span><h3>Lacak naskah real-time</h3><p>Setiap naskah punya kode lacak. Anda melihat sendiri tahapnya, dari telaah redaksi sampai ISBN keluar, tanpa harus menanyakan lewat WhatsApp.</p></article>
+      <article class="card"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-7"/></svg></span><h3>Simulasi angka kredit</h3><p>Hitung perkiraan angka kredit buku Anda sebelum menulis, termasuk pembagian untuk penulis utama dan anggota.</p></article>
+      <article class="card"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5"/></svg></span><h3>Harga terbuka</h3><p>Kalkulator menunjukkan rincian biaya per item. Tidak ada biaya tersembunyi setelah kontrak ditandatangani.</p></article>
+      <article class="card"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M15 20c0-2 1-4 4-4"/></svg></span><h3>Reviewer sebidang</h3><p>Paket Unggulan ditelaah oleh reviewer dari rumpun ilmu yang sama, lengkap dengan surat keterangan untuk berkas PAK.</p></article>
+      <article class="card"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h3"/></svg></span><h3>Cicilan 3× tanpa bunga</h3><p>Bayar bertahap sesuai kemajuan naskah: saat kontrak, saat proof, dan sebelum cetak.</p></article>
+      <article class="card"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span><h3>Garansi ISBN</h3><p>Naskah yang lolos telaah redaksi dijamin mendapat ISBN. Jika tidak, biaya penerbitan dikembalikan penuh.</p></article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= LAYANAN ================= -->
+<section class="band" id="layanan">
+  <div class="wrap">
+    <div class="sec-head"><span class="eyebrow">Layanan</span><h2>Semua jenis buku perguruan tinggi, dalam satu tempat.</h2><p class="lead">Kami menerbitkan buku cetak dan e-book dengan ukuran UNESCO yang lazim untuk buku ilmiah.</p></div>
+    <div class="grid g4">
+      <article class="card"><span class="tag">Pendidikan</span><h3>Buku Ajar</h3><p>Pegangan mata kuliah dengan capaian pembelajaran, latihan, dan rangkuman tiap bab.</p></article>
+      <article class="card"><span class="tag">Penelitian</span><h3>Buku Referensi</h3><p>Kajian mendalam satu bidang ilmu dari hasil penelitian. Nilai angka kredit tertinggi.</p></article>
+      <article class="card"><span class="tag">Penelitian</span><h3>Monograf</h3><p>Pembahasan tuntas satu topik penelitian yang spesifik, cocok sebagai luaran hibah.</p></article>
+      <article class="card"><span class="tag">Kolaborasi</span><h3>Book Chapter</h3><p>Satu bab dalam buku bunga rampai bersama penulis dari berbagai kampus.</p></article>
+      <article class="card"><span class="tag">Konversi</span><h3>Tesis & Disertasi jadi Buku</h3><p>Kami bantu menulis ulang karya ilmiah menjadi buku yang memenuhi syarat ISBN.</p></article>
+      <article class="card"><span class="tag">Pendidikan</span><h3>Modul & Panduan Praktikum</h3><p>Modul laboratorium, panduan klinik, dan buku kerja mahasiswa.</p></article>
+      <article class="card"><span class="tag">Pendukung</span><h3>HKI, Similarity, DOI</h3><p>Pendaftaran hak cipta ke DJKI, laporan similarity, dan DOI untuk buku.</p></article>
+      <article class="card"><span class="tag">Institusi</span><h3>Writing Camp Kampus</h3><p>Pendampingan menulis buku untuk satu fakultas atau program studi, sampai terbit.</p></article>
+    </div>
+
+    <div class="sec-head" style="margin-top:56px"><span class="eyebrow">Alur penerbitan</span><h2>Dari naskah ke buku dalam enam tahap.</h2></div>
+    <ol class="flow">
+      <li><b>Kirim naskah</b><span>Isi formulir dan lampirkan tautan naskah.</span></li>
+      <li><b>Telaah redaksi</b><span>Penilaian kelayakan dalam 2–3 hari kerja.</span></li>
+      <li><b>Kontrak</b><span>Perjanjian penerbitan dan pembayaran tahap 1.</span></li>
+      <li><b>Editing & layout</b><span>Penyuntingan, tata letak, dan sampul.</span></li>
+      <li><b>Proof & ISBN</b><span>Anda menyetujui proof, kami ajukan ISBN.</span></li>
+      <li><b>Cetak & terbit</b><span>Eksemplar dikirim, buku masuk katalog.</span></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ================= HARGA ================= -->
+<section class="band alt" id="harga">
+  <div class="wrap">
+    <div class="sec-head"><span class="eyebrow">Paket & harga</span><h2>Harga wajar untuk kantong dosen, tanpa biaya kejutan.</h2><p class="lead">Semua paket sudah termasuk ISBN, layout, sampul, dan e-book. Pilih sesuai jenis buku dan target karier Anda.</p></div>
+    <div class="plans" id="plans"></div>
+    <div class="extra-grid">
+      <article class="plan" id="chapterPlan"></article>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Layanan tambahan</th><th style="text-align:right">Harga</th></tr></thead>
+          <tbody id="addonTable"></tbody>
+        </table>
+      </div>
+    </div>
+    <p class="note" style="margin-top:14px" id="installNote"></p>
+  </div>
+</section>
+
+<!-- ================= STUDIO PENULIS ================= -->
+<section class="band" id="studio">
+  <div class="wrap">
+    <div class="sec-head"><span class="eyebrow">Studio Penulis</span><h2>Rencanakan buku Anda sebelum mengirim naskah.</h2><p class="lead">Tiga alat gratis: hitung biaya, perkirakan angka kredit, dan periksa apakah naskah sudah siap terbit.</p></div>
+    <div class="tabs" role="tablist" aria-label="Alat Studio Penulis">
+      <button class="tab" role="tab" id="t-calc" aria-controls="p-calc" aria-selected="true">Kalkulator biaya</button>
+      <button class="tab" role="tab" id="t-ak" aria-controls="p-ak" aria-selected="false">Simulasi angka kredit</button>
+      <button class="tab" role="tab" id="t-ready" aria-controls="p-ready" aria-selected="false">Cek kesiapan naskah</button>
+    </div>
+
+    <!-- Kalkulator -->
+    <div class="panel" role="tabpanel" id="p-calc" aria-labelledby="t-calc">
+      <div class="tool">
+        <div class="fields">
+          <div class="field"><label for="cPkg">Paket</label><select id="cPkg"></select></div>
+          <div class="two">
+            <div class="field"><label for="cPages">Perkiraan jumlah halaman</label><input id="cPages" type="number" min="49" max="900" value="180"></div>
+            <div class="field"><label for="cCopies">Jumlah eksemplar cetak</label><input id="cCopies" type="number" min="0" max="2000" value="25"></div>
+          </div>
+          <div class="field"><span class="lbl">Sampul</span>
+            <div class="seg" id="cCover"><button type="button" data-v="soft" aria-pressed="true">Softcover</button><button type="button" data-v="hard" aria-pressed="false">Hardcover</button></div>
+          </div>
+          <div class="field"><span class="lbl">Isi</span>
+            <div class="seg" id="cColor"><button type="button" data-v="bw" aria-pressed="true">Hitam-putih</button><button type="button" data-v="color" aria-pressed="false">Berwarna penuh</button></div>
+          </div>
+          <div class="field"><span class="lbl">Layanan tambahan</span><div class="checks" id="cAddons"></div></div>
+        </div>
+        <div class="receipt" aria-live="polite">
+          <span class="eyebrow">Estimasi biaya</span>
+          <div id="cRows"></div>
+          <div class="row total"><span>Total</span><span id="cTotal">Rp0</span></div>
+          <div class="big mono" id="cBig">Rp0</div>
+          <p class="note" id="cInstall"></p>
+          <p class="note">Estimasi otomatis. Harga final tercantum di kontrak setelah telaah naskah.</p>
+          <button class="btn btn-primary" id="cApply" type="button">Ajukan naskah dengan pilihan ini</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Angka kredit -->
+    <div class="panel" role="tabpanel" id="p-ak" aria-labelledby="t-ak" hidden>
+      <div class="tool">
+        <div class="fields">
+          <div class="field"><label for="akType">Jenis karya</label><select id="akType"></select></div>
+          <div class="field"><label for="akN">Jumlah penulis</label><input id="akN" type="number" min="1" max="20" value="3"></div>
+          <div class="field"><span class="lbl">Peran Anda</span>
+            <div class="seg" id="akRole"><button type="button" data-v="utama" aria-pressed="true">Penulis utama</button><button type="button" data-v="anggota" aria-pressed="false">Penulis anggota</button><button type="button" data-v="setara" aria-pressed="false">Tidak ada penulis utama</button></div>
+          </div>
+          <p class="note">Pembagian mengikuti kaidah umum Pedoman Operasional PAK: penulis utama 60%, anggota berbagi 40%; tanpa penulis utama dibagi rata. Nilai akhir ditentukan tim penilai sesuai pedoman yang berlaku di institusi Anda.</p>
+        </div>
+        <div class="receipt" aria-live="polite">
+          <span class="eyebrow">Perkiraan angka kredit Anda</span>
+          <div class="big mono" id="akBig">0</div>
+          <p class="note" id="akMax"></p>
+          <div class="split" id="akSplit"></div>
+          <p class="note" id="akExplain"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kesiapan -->
+    <div class="panel" role="tabpanel" id="p-ready" aria-labelledby="t-ready" hidden>
+      <div class="tool">
+        <div class="fields"><span class="lbl" style="font-size:.82rem;font-weight:600;color:var(--muted)">Centang yang sudah terpenuhi</span><div class="checks" id="rList"></div></div>
+        <div class="receipt" aria-live="polite">
+          <span class="eyebrow">Skor kesiapan</span>
+          <div class="big mono" id="rScore">0%</div>
+          <div class="meter"><i id="rBar" style="width:0%"></i></div>
+          <p id="rMsg"></p>
+          <a class="btn btn-ghost btn-sm" href="#kirim">Kirim naskah untuk telaah gratis</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= KATALOG ================= -->
+<section class="band alt" id="katalog">
+  <div class="wrap">
+    <div class="sec-head"><span class="eyebrow">Katalog</span><h2>Buku yang telah terbit.</h2></div>
+    <div class="cat-tools">
+      <input id="catSearch" type="search" placeholder="Cari judul, penulis, atau ISBN" aria-label="Cari katalog">
+      <div class="chips" id="catChips"></div>
+    </div>
+    <p class="demo-flag" id="catDemo" hidden>Contoh tampilan — data asli muncul setelah Supabase terhubung.</p>
+    <div class="books" id="books"></div>
+  </div>
+</section>
+
+<!-- ================= CALL FOR CHAPTER ================= -->
+<section class="band" id="call">
+  <div class="wrap">
+    <div class="sec-head"><span class="eyebrow">Call for Chapter</span><h2>Kolaborasi lintas kampus yang sedang dibuka.</h2><p class="lead">Satu bab, satu ISBN, dan biaya yang ringan. Pilih tema yang sesuai bidang Anda.</p></div>
+    <p class="demo-flag" id="callDemo" hidden>Contoh tampilan — daftar asli muncul setelah Supabase terhubung.</p>
+    <div class="calls" id="calls"></div>
+  </div>
+</section>
+
+<!-- ================= LACAK ================= -->
+<section class="band cloth" id="lacak">
+  <div class="wrap">
+    <div class="sec-head"><span class="eyebrow" style="color:var(--foil-soft)">Lacak Naskah</span><h2>Di mana naskah saya sekarang?</h2><p class="lead">Masukkan kode lacak yang Anda terima saat mengirim naskah.</p></div>
+    <form class="track-form" id="trackForm">
+      <input id="trackCode" placeholder="IGV-26-XXXXXX" aria-label="Kode lacak" autocomplete="off" required>
+      <button class="btn btn-foil" type="submit">Lacak</button>
+    </form>
+    <p class="note" style="color:inherit;opacity:.75;margin-top:8px" id="trackHint">Mode demo: coba kode <span class="mono">IGV-DEMO</span>.</p>
+    <div class="track-result" id="trackResult"></div>
+  </div>
+</section>
+
+<!-- ================= KIRIM NASKAH ================= -->
+<section class="band" id="kirim">
+  <div class="wrap submit-grid">
+    <div class="sec-head" style="margin:0">
+      <span class="eyebrow">Kirim Naskah</span>
+      <h2>Telaah naskah gratis dalam 2–3 hari kerja.</h2>
+      <p class="lead">Unggah naskah ke Google Drive atau OneDrive, atur aksesnya menjadi "siapa saja yang memiliki tautan", lalu tempel tautannya di formulir. Anda langsung mendapat kode lacak.</p>
+      <p class="note">Data Anda hanya dipakai untuk proses penerbitan dan tidak dibagikan ke pihak lain.</p>
+    </div>
+    <form class="form panel" id="submitForm" novalidate>
+      <div class="two">
+        <div class="field"><label for="fName">Nama lengkap & gelar</label><input id="fName" name="full_name" required maxlength="120"></div>
+        <div class="field"><label for="fInst">Institusi</label><input id="fInst" name="institution" maxlength="160"></div>
+      </div>
+      <div class="two">
+        <div class="field"><label for="fEmail">Email</label><input id="fEmail" name="email" type="email" required maxlength="160"></div>
+        <div class="field"><label for="fWa">Nomor WhatsApp</label><input id="fWa" name="whatsapp" inputmode="tel" required maxlength="20" placeholder="08xxxxxxxxxx"></div>
+      </div>
+      <div class="field"><label for="fTitle">Judul naskah</label><input id="fTitle" name="book_title" required maxlength="250"></div>
+      <div class="two">
+        <div class="field"><label for="fType">Jenis buku</label>
+          <select id="fType" name="book_type"><option>Buku ajar</option><option>Buku referensi</option><option>Monograf</option><option>Book chapter</option><option>Konversi tesis/disertasi</option><option>Modul/panduan praktikum</option><option>Lainnya</option></select></div>
+        <div class="field"><label for="fPkg">Paket</label><select id="fPkg" name="package"></select></div>
+      </div>
+      <div class="two">
+        <div class="field"><label for="fPages">Perkiraan halaman</label><input id="fPages" name="pages_estimate" type="number" min="1" max="2000"></div>
+        <div class="field"><label for="fCall">Call for chapter (opsional)</label><select id="fCall" name="call_id"><option value="">—</option></select></div>
+      </div>
+      <div class="field"><label for="fUrl">Tautan naskah</label><input id="fUrl" name="manuscript_url" type="url" required placeholder="https://drive.google.com/..."></div>
+      <div class="field"><label for="fNotes">Catatan untuk redaksi</label><textarea id="fNotes" name="notes" maxlength="2000" placeholder="Target terbit, kebutuhan khusus, atau estimasi dari kalkulator."></textarea></div>
+      <button class="btn btn-primary" type="submit" id="fBtn">Kirim naskah</button>
+      <div id="fMsg" aria-live="polite"></div>
+    </form>
+  </div>
+</section>
+
+<!-- ================= FAQ ================= -->
+<section class="band alt" id="faq">
+  <div class="wrap">
+    <div class="sec-head"><span class="eyebrow">Tanya jawab</span><h2>Yang sering ditanyakan dosen.</h2></div>
+    <div class="faq">
+      <details><summary>Berapa lama sampai buku terbit?</summary><p>Tergantung paket: 21–30 hari kerja (Esensial), 14–21 hari kerja (Profesional), dan 10–14 hari kerja (Unggulan), dihitung sejak naskah final dan kontrak disetujui. Waktu terbit ISBN dari Perpusnas berada di luar kendali kami, tetapi selalu tampak di dasbor Lacak Naskah.</p></details>
+      <details><summary>Apakah buku bisa dipakai untuk BKD dan kenaikan jabatan?</summary><p>Ya, selama jenis bukunya sesuai (buku ajar, referensi, monograf, atau book chapter) dan terbit ber-ISBN dari penerbit resmi. Gunakan Simulasi Angka Kredit untuk perkiraan nilainya.</p></details>
+      <details><summary>Naskah seperti apa yang ditolak untuk ISBN?</summary><p>Antara lain naskah yang terlalu tipis, kumpulan artikel jurnal atau skripsi yang belum diolah menjadi buku, dan naskah dengan similarity tinggi. Cek Kesiapan Naskah membantu Anda memeriksanya lebih awal.</p></details>
+      <details><summary>Bagaimana sistem cicilannya?</summary><p>40% saat kontrak, 30% saat proof disetujui, dan 30% sebelum naik cetak. Tanpa bunga dan tanpa biaya administrasi.</p></details>
+      <details><summary>Bagaimana royalti dibayarkan?</summary><p>Royalti 20% dari harga jual bersih untuk setiap buku yang terjual melalui jaringan kami, dilaporkan dan dibayarkan setiap semester.</p></details>
+      <details><summary>Siapa pemegang hak cipta buku?</summary><p>Penulis. Penerbit memegang hak terbit sesuai masa kontrak. Pada paket Profesional dan Unggulan kami mendaftarkan hak cipta atas nama penulis ke DJKI.</p></details>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="#beranda" style="color:inherit"><span class="brand-mark" aria-hidden="true"></span><span><b data-brand="name">IGV Press</b><small data-brand="company" style="color:inherit;opacity:.7">PT. Inovasi Global Ventures</small></span></a>
+        <p style="margin-top:12px" data-brand="tagline">Penerbit buku akademik untuk dosen dan peneliti</p>
+        <p id="ikapiLine" hidden></p>
+      </div>
+      <div>
+        <h4>Kontak</h4>
+        <ul>
+          <li class="copy-line">WhatsApp: <span class="mono" id="waText"></span> <button type="button" data-copy="waText">Salin</button></li>
+          <li class="copy-line">Email: <span id="mailText"></span> <button type="button" data-copy="mailText">Salin</button></li>
+          <li data-brand="address">Jakarta, Indonesia</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Jelajahi</h4>
+        <ul><li><a href="#harga">Paket & harga</a></li><li><a href="#studio">Studio Penulis</a></li><li><a href="#call">Call for Chapter</a></li><li><a href="#lacak">Lacak Naskah</a></li><li><a href="admin.html">Masuk redaksi</a></li></ul>
+      </div>
+    </div>
+    <div class="foot-base"><span>© <span id="year">2026</span> <span data-brand="company">PT. Inovasi Global Ventures</span></span><span id="modeLine"></span></div>
+  </div>
+</footer>
+
+<a class="wa-float" id="waFloat" href="#" target="_blank" rel="noopener">Konsultasi WhatsApp</a>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
