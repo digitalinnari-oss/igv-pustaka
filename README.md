@@ -7,9 +7,10 @@ Situs statis (HTML/CSS/JS murni, tanpa proses build) dengan database **Supabase*
 | File | Fungsi |
 |---|---|
 | `index.html` | Halaman utama: Profil, Layanan, Harga, Studio Penulis, Katalog, Call for Chapter, Lacak Naskah, Kirim Naskah, FAQ |
-| `admin.html` | Dasbor redaksi (login): ubah status naskah, kelola katalog dan call for chapter |
-| `js/config.js` | **Satu-satunya file yang wajib diubah**: kunci Supabase, nomor WA, email, alamat, nomor IKAPI |
-| `js/data.js` | Harga paket, add-on, tarif cetak, angka kredit, daftar cek kesiapan naskah |
+| `penulis.html` | **Portal Penulis**: masuk via email tanpa kata sandi, pantau naskah, bayar tagihan bertahap, unggah naskah & revisi |
+| `admin.html` | Dasbor redaksi (login): status naskah, katalog, call for chapter, **harga & paket**, dan **seluruh teks halaman** |
+| `js/config.js` | **Satu-satunya file yang wajib diubah**: kunci Supabase (identitas di sini hanya nilai awal) |
+| `js/data.js` | Nilai **bawaan** harga dan konten; dipakai sampai admin menyimpan versi sendiri |
 | `supabase/schema.sql` | Tabel, keamanan (RLS), dan fungsi untuk kirim/lacak naskah |
 | `_headers` | Header keamanan untuk Cloudflare Pages |
 
@@ -20,6 +21,8 @@ Situs statis (HTML/CSS/JS murni, tanpa proses build) dengan database **Supabase*
 4. **Cek kesiapan naskah** berdasarkan syarat ISBN Perpusnas.
 5. **Lacak naskah real-time** dengan kode lacak dan riwayat tanggal tiap tahap.
 6. **Call for chapter** dengan hitung mundur dan kuota yang terisi otomatis.
+7. **Portal Penulis**: semua naskah, tagihan cicilan, bukti transfer, proof dari redaksi, dan revisi dalam satu dasbor.
+8. **Dasbor redaksi**: ringkasan bulanan, daftar "perlu tindakan", verifikasi pembayaran, kirim proof, dan tombol kabar WhatsApp berisi status terkini.
 
 ## Langkah deploy (±30 menit)
 
@@ -32,7 +35,9 @@ Situs statis (HTML/CSS/JS murni, tanpa proses build) dengan database **Supabase*
    insert into public.admins(user_id) values ('PASTE-USER-UID');
    ```
 5. **Project Settings → API**: salin **Project URL** dan **anon public key** ke `js/config.js`.
-6. Disarankan: **Authentication → Providers → Email** matikan "Allow new users to sign up" agar orang lain tidak bisa mendaftar.
+6. **Authentication → Providers → Email**: biarkan "Allow new users to sign up" **aktif**, karena penulis masuk ke Portal Penulis lewat tautan email. Ini aman: hak redaksi hanya diberikan kepada akun yang ada di tabel `admins`.
+7. **Authentication → URL Configuration**: isi **Site URL** dengan alamat situs (mis. `https://igv-press.pages.dev`) dan tambahkan `https://igv-press.pages.dev/penulis.html` ke **Redirect URLs**. Tanpa ini, tautan masuk penulis akan gagal.
+8. **Email pengirim (penting)**: layanan email bawaan Supabase hanya untuk uji coba dan dibatasi beberapa email per jam. Sebelum tayang, pasang SMTP sendiri di **Authentication → Emails → SMTP Settings** (misalnya Brevo atau Resend, keduanya punya paket gratis), lalu ubah template email "Magic Link" ke Bahasa Indonesia.
 
 ### 2. GitHub (kode)
 1. Buat repository baru, misalnya `igv-press` (boleh private).
@@ -54,10 +59,25 @@ Situs statis (HTML/CSS/JS murni, tanpa proses build) dengan database **Supabase*
 ### 4. Domain sendiri (opsional)
 Subdomain `*.pages.dev` gratis selamanya. Domain sendiri (`igvpress.id`, `.co.id`, `.com`) tetap harus dibeli di registrar (±Rp150–350 ribu/tahun), lalu hubungkan di **Pages → Custom domains**. SSL dari Cloudflare gratis.
 
-## Mengubah harga
-Semua harga ada di `js/data.js` (`packages`, `chapter`, `addons`, `print`). Tabel harga dan kalkulator membaca sumber yang sama, jadi cukup ubah satu kali.
+## Alur kerja harian redaksi
+1. **Ringkasan** menampilkan naskah baru, bukti bayar yang menunggu, dan naskah yang belum punya jadwal tagihan. Klik **Buka** untuk langsung ke detailnya.
+2. Di **Naskah masuk → Detail**: isi **nilai kontrak**, klik **Buat jadwal tagihan** (otomatis dibagi sesuai tahap cicilan, mis. 40/30/30), lalu ubah status ke "Kontrak & pembayaran".
+3. Penulis mengunggah bukti transfer di Portal Penulis → muncul di Ringkasan → klik **Lihat bukti**, lalu **Tandai lunas** atau **Tolak bukti** dengan alasan.
+4. Kirim proof layout lewat **Kirim berkas ke penulis**; penulis mengunduhnya dari portal dan mengirim revisi balik.
+5. Tombol **Kabari via WhatsApp** membuka WhatsApp dengan pesan status terkini yang sudah terisi.
 
-Acuan harga yang dipakai (dapat disesuaikan):
+Berkas naskah disimpan di Supabase Storage (bucket privat `manuscripts`, maks 50 MB per berkas). Paket gratis Supabase memberi 1 GB penyimpanan; arsipkan naskah lama ke Google Drive bila mendekati batas.
+
+## Mengatur harga dan konten dari admin
+Masuk ke `https://domain-anda/admin.html`, lalu:
+- **Harga & paket**: tambah/hapus/urutkan paket, ubah harga, eksemplar, batas halaman, fasilitas, layanan tambahan, tarif cetak, dan cicilan. Tabel harga, kalkulator, dan pilihan paket di formulir langsung ikut berubah.
+- **Konten halaman**: rekening pembayaran, teks Portal Penulis, identitas & kontak (nama, PT, WhatsApp, email, alamat, IKAPI, awalan ISBN), beranda, profil, visi-misi, keunggulan, layanan, alur, judul tiap bagian, FAQ, nilai angka kredit, dan syarat cek kesiapan naskah.
+- Ketik `{nama}` atau `{perusahaan}` di teks mana pun; otomatis diganti nama penerbit/PT. Di judul beranda, apit kata dengan `*bintang*` untuk menyorotnya.
+- **Kembalikan ke bawaan** memuat ulang isi `js/data.js`; baru berlaku setelah Anda menekan Simpan.
+
+Pengaturan disimpan di tabel `site_settings` (dua baris: `pricing` dan `content`). Pengunjung hanya bisa membaca; hanya admin yang bisa mengubah.
+
+Acuan harga bawaan:
 | Paket | Harga | Eksemplar | Halaman |
 |---|---|---|---|
 | Esensial | Rp1.250.000 | 5 | s.d. 150 |
@@ -65,10 +85,12 @@ Acuan harga yang dipakai (dapat disesuaikan):
 | Unggulan | Rp4.750.000 | 30 | s.d. 300 |
 | Book chapter | Rp450.000/penulis | 1 | 1 bab |
 
+Yang masih diubah lewat kode: urutan dan susunan bagian halaman, warna/huruf (`css/style.css`), nama tahap Lacak Naskah (terkait kolom status database), dan label tombol.
+
 ## Yang perlu Anda pastikan sebelum tayang
 - **Komitmen bisnis** di situs (royalti 20%, garansi ISBN atau uang kembali, cicilan 3×, reviewer sebidang, waktu proses) adalah usulan. Sesuaikan dengan kebijakan perusahaan sebelum dipublikasikan.
-- **DOI** memerlukan keanggotaan Crossref (melalui sponsor/afiliasi). Jika belum, hapus `doi` dari `js/data.js`.
-- **Nomor IKAPI**: isi `ikapi` di `js/config.js` setelah terdaftar; baris itu otomatis muncul di footer.
+- **DOI** memerlukan keanggotaan Crossref (melalui sponsor/afiliasi). Jika belum, hapus layanan DOI di admin > Harga & paket.
+- **Nomor IKAPI**: isi di admin > Konten halaman > Identitas & kontak; baris itu otomatis muncul di footer.
 - **Nilai angka kredit** mengacu Pedoman Operasional PAK. Periksa kembali jika ada pedoman terbaru.
 - Situs tidak menampilkan testimoni palsu. Bila ingin menambah testimoni, gunakan kutipan asli dengan izin penulis.
 

@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Portal Penulis</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="site-header">
+  <nav class="wrap nav" aria-label="Menu portal">
+    <a class="brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span><b data-b="name">IGV Press</b><small data-b="company">PT. Inovasi Global Ventures</small></span>
+    </a>
+    <a class="btn btn-ghost btn-sm" href="index.html">Kembali ke situs</a>
+    <button class="btn btn-ghost btn-sm" id="logout" type="button" hidden>Keluar</button>
+  </nav>
+</header>
+
+<main>
+  <section class="band portal-hero">
+    <div class="wrap">
+      <div class="sec-head" style="margin:0">
+        <span class="eyebrow">Ruang penulis</span>
+        <h1 id="pTitle">Portal Penulis</h1>
+        <p class="lead" id="pLead"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap portal-body">
+    <p class="alert" id="demoBanner" hidden><b>Mode demo.</b> Data di bawah adalah contoh. Setelah Supabase terhubung, penulis masuk dengan email dan melihat naskahnya sendiri.</p>
+
+    <!-- Masuk -->
+    <form class="panel form login-card" id="loginForm" hidden novalidate>
+      <h2>Masuk tanpa kata sandi</h2>
+      <p class="note">Masukkan email yang Anda pakai saat mengirim naskah. Kami kirim tautan masuk ke email tersebut.</p>
+      <div class="field"><label for="lEmail">Email</label><input id="lEmail" type="email" required autocomplete="email" placeholder="nama@kampus.ac.id"></div>
+      <button class="btn btn-primary" type="submit" id="lBtn">Kirim tautan masuk</button>
+      <div id="lMsg" aria-live="polite"></div>
+    </form>
+
+    <!-- Aplikasi -->
+    <div id="app" hidden>
+      <div class="portal-top">
+        <div style="min-width:0"><span class="note">Masuk sebagai</span><br><b id="who" class="who"></b></div>
+        <div class="stats" id="stats"></div>
+      </div>
+
+      <div class="portal-grid">
+        <div class="portal-main">
+          <div class="list-head"><h2>Naskah saya</h2><button class="btn btn-primary btn-sm" type="button" id="newBtn">+ Kirim naskah baru</button></div>
+          <div id="subs" class="ms-list"></div>
+        </div>
+        <aside class="portal-side">
+          <div class="panel side-card">
+            <span class="eyebrow">Rekening pembayaran</span>
+            <p><span id="bankName"></span><br><b class="mono acct" id="bankAcct"></b> <button type="button" class="copy-btn" id="copyAcct">Salin</button><br><span class="note" id="bankHolder"></span></p>
+            <p class="note" id="bankNote"></p>
+          </div>
+          <div class="panel side-card">
+            <span class="eyebrow">Butuh bantuan?</span>
+            <p class="note">Hubungi redaksi melalui WhatsApp <b class="mono" id="waText"></b> atau email <b id="mailText"></b>. Sebutkan kode lacak naskah Anda.</p>
+          </div>
+        </aside>
+      </div>
+
+      <!-- Form naskah baru -->
+      <form class="panel form new-form" id="newForm" hidden novalidate>
+        <div class="list-head"><h2>Kirim naskah baru</h2><button class="btn btn-ghost btn-sm" type="button" id="newClose">Tutup</button></div>
+        <div class="two">
+          <div class="field"><label for="nName">Nama lengkap & gelar</label><input id="nName" name="full_name" required maxlength="120"></div>
+          <div class="field"><label for="nInst">Institusi</label><input id="nInst" name="institution" maxlength="160"></div>
+        </div>
+        <div class="two">
+          <div class="field"><label for="nWa">Nomor WhatsApp</label><input id="nWa" name="whatsapp" inputmode="tel" required maxlength="20" placeholder="08xxxxxxxxxx"></div>
+          <div class="field"><label for="nPages">Perkiraan halaman</label><input id="nPages" name="pages_estimate" type="number" min="1" max="2000"></div>
+        </div>
+        <div class="field"><label for="nTitle">Judul naskah</label><input id="nTitle" name="book_title" required maxlength="250"></div>
+        <div class="two">
+          <div class="field"><label for="nType">Jenis buku</label>
+            <select id="nType" name="book_type"><option>Buku ajar</option><option>Buku referensi</option><option>Monograf</option><option>Book chapter</option><option>Konversi tesis/disertasi</option><option>Modul/panduan praktikum</option><option>Lainnya</option></select></div>
+          <div class="field"><label for="nPkg">Paket</label><select id="nPkg" name="package"></select></div>
+        </div>
+        <div class="field"><label for="nFile">File naskah (.docx, .doc, .pdf, .zip — maks 50 MB)</label><input id="nFile" type="file" accept=".doc,.docx,.pdf,.zip,.rar" required></div>
+        <div class="field"><label for="nNotes">Catatan untuk redaksi</label><textarea id="nNotes" name="notes" maxlength="2000"></textarea></div>
+        <button class="btn btn-primary" type="submit" id="nBtn">Kirim naskah</button>
+        <div id="nMsg" aria-live="polite"></div>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap"><div class="foot-base" style="margin:0;border:0;padding:0"><span>© <span class="yr">2026</span> <span data-b="company">PT. Inovasi Global Ventures</span></span><a href="index.html#lacak">Lacak naskah tanpa masuk</a></div></div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/portal.js"></script>
+</body>
+</html>

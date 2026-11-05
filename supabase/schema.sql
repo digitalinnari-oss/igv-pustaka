@@ -49,6 +49,16 @@ create table if not exists public.calls (
   created_at timestamptz not null default now()
 );
 
+
+-- ---------- Pengaturan situs (harga & konten, diatur dari admin.html) ----------
+-- key = 'pricing' atau 'content'; value = JSON. Baris yang belum ada memakai nilai bawaan js/data.js.
+create table if not exists public.site_settings (
+  key text primary key check (key in ('pricing', 'content')),
+  value jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now(),
+  updated_by uuid references auth.users(id) on delete set null
+);
+
 -- ---------- Naskah masuk ----------
 create table if not exists public.submissions (
   id uuid primary key default gen_random_uuid(),
@@ -167,6 +177,7 @@ alter table public.books enable row level security;
 alter table public.calls enable row level security;
 alter table public.submissions enable row level security;
 alter table public.submission_events enable row level security;
+alter table public.site_settings enable row level security;
 
 drop policy if exists "admins read self" on public.admins;
 create policy "admins read self" on public.admins for select using (user_id = auth.uid());
@@ -187,6 +198,11 @@ create policy "submissions admin all" on public.submissions for all using (publi
 drop policy if exists "events admin read" on public.submission_events;
 create policy "events admin read" on public.submission_events for select using (public.is_admin());
 
+drop policy if exists "settings public read" on public.site_settings;
+create policy "settings public read" on public.site_settings for select using (true);
+drop policy if exists "settings admin write" on public.site_settings;
+create policy "settings admin write" on public.site_settings for all using (public.is_admin()) with check (public.is_admin());
+
 -- =====================================================================
 --  SETELAH MENJALANKAN FILE INI:
 --  1. Authentication > Users > Add user  (email + password akun redaksi)
@@ -197,3 +213,173 @@ create policy "events admin read" on public.submission_events for select using (
 --       values ('Keperawatan Maternitas & Kesehatan Reproduksi', 'Kesehatan',
 --               'Bab hasil penelitian atau kajian pustaka 15–20 halaman.', current_date + 30, 15);
 -- =====================================================================
+
+
+-- =====================================================================
+--  TAHAP 2 — Portal Penulis, pembayaran bertahap, unggah berkas
+--  Bagian ini aman dijalankan pada database yang sudah berisi data.
+-- =====================================================================
+
+alter table public.submissions add column if not exists author_id uuid references auth.users(id) on delete set null;
+alter table public.submissions add column if not exists agreed_price int check (agreed_price is null or agreed_price >= 0);
+alter table public.submissions add column if not exists manuscript_path text;
+alter table public.submissions alter column manuscript_url drop not null;
+alter table public.submissions drop constraint if exists submissions_manuscript_src;
+alter table public.submissions add constraint submissions_manuscript_src
+  check (manuscript_url is not null or manuscript_path is not null);
+create index if not exists submissions_email_idx on public.submissions (lower(email));
+create index if not exists submissions_author_idx on public.submissions (author_id);
+
+create table if not exists public.payments (
+  id uuid primary key default gen_random_uuid(),
+  submission_id uuid not null references public.submissions(id) on delete cascade,
+  seq int not null,
+  label text not null,
+  amount int not null check (amount >= 0),
+  status text not null default 'belum' check (status in ('belum', 'menunggu', 'lunas', 'ditolak')),
+  proof_path text,
+  admin_note text,
+  paid_at timestamptz,
+  verified_at timestamptz,
+  created_at timestamptz not null default now()
+);
+create index if not exists payments_sub_idx on public.payments (submission_id);
+
+create table if not exists public.submission_files (
+  id uuid primary key default gen_random_uuid(),
+  submission_id uuid not null references public.submissions(id) on delete cascade,
+  kind text not null check (kind in ('naskah', 'revisi', 'proof', 'bukti_bayar', 'lainnya')),
+  path text not null,
+  name text,
+  note text,
+  uploaded_by uuid references auth.users(id) on delete set null,
+  from_admin boolean not null default false,
+  created_at timestamptz not null default now()
+);
+create index if not exists files_sub_idx on public.submission_files (submission_id);
+
+-- Penulis = pengguna yang login dengan email yang sama dengan email di naskah
+-- (email terverifikasi lewat tautan masuk), atau author_id yang tercatat.
+create or replace function public.owns_submission(sid uuid)
+returns boolean language sql stable security definer set search_path = public as $$
+  select auth.uid() is not null and exists (
+    select 1 from public.submissions s
+    where s.id = sid
+      and (s.author_id = auth.uid() or lower(s.email) = lower(coalesce(auth.jwt() ->> 'email', '-'))));
+$$;
+
+-- Kirim naskah (versi tahap 2): mendukung tautan ATAU file yang diunggah penulis yang login.
+create or replace function public.submit_manuscript(p jsonb)
+returns text language plpgsql security definer set search_path = public as $$
+declare v_code text; v_path text := nullif(p->>'manuscript_path', ''); v_url text := nullif(trim(p->>'manuscript_url'), ''); v_id uuid;
+begin
+  if v_path is not null and (auth.uid() is null or v_path not like auth.uid()::text || '/%') then
+    raise exception 'File naskah tidak valid';
+  end if;
+  if v_url is not null and v_url !~* '^https://' then raise exception 'Tautan naskah harus diawali https://'; end if;
+  if v_url is null and v_path is null then raise exception 'Lampirkan tautan atau file naskah'; end if;
+
+  loop
+    v_code := 'IGV-' || to_char(now(), 'YY') || '-' || upper(substr(encode(gen_random_bytes(4), 'hex'), 1, 6));
+    exit when not exists (select 1 from public.submissions where tracking_code = v_code);
+  end loop;
+
+  insert into public.submissions(tracking_code, full_name, email, whatsapp, institution, book_title, book_type, package,
+                                 pages_estimate, manuscript_url, manuscript_path, notes, call_id, author_id)
+  values (v_code, trim(p->>'full_name'),
+          lower(coalesce(nullif(auth.jwt() ->> 'email', ''), trim(p->>'email'))),
+          trim(p->>'whatsapp'), nullif(trim(p->>'institution'), ''), trim(p->>'book_title'),
+          p->>'book_type', p->>'package', nullif(p->>'pages_estimate', '')::int, v_url, v_path,
+          nullif(p->>'notes', ''), nullif(p->>'call_id', '')::uuid, auth.uid())
+  returning id into v_id;
+
+  if v_path is not null then
+    insert into public.submission_files(submission_id, kind, path, name, uploaded_by)
+    values (v_id, 'naskah', v_path, nullif(p->>'manuscript_name', ''), auth.uid());
+  end if;
+  return v_code;
+end $$;
+
+-- Penulis menambah berkas (revisi, dll.) pada naskahnya sendiri
+create or replace function public.author_add_file(p_submission uuid, p_kind text, p_path text, p_name text, p_note text default null)
+returns uuid language plpgsql security definer set search_path = public as $$
+declare v_id uuid;
+begin
+  if not public.owns_submission(p_submission) then raise exception 'Naskah tidak ditemukan'; end if;
+  if p_kind not in ('naskah', 'revisi', 'lainnya') then raise exception 'Jenis berkas tidak valid'; end if;
+  if p_path not like auth.uid()::text || '/%' then raise exception 'Lokasi berkas tidak valid'; end if;
+  insert into public.submission_files(submission_id, kind, path, name, note, uploaded_by)
+  values (p_submission, p_kind, p_path, p_name, nullif(p_note, ''), auth.uid()) returning id into v_id;
+  return v_id;
+end $$;
+
+-- Penulis mengirim bukti transfer untuk satu tahap pembayaran
+create or replace function public.author_pay(p_payment uuid, p_path text, p_name text)
+returns void language plpgsql security definer set search_path = public as $$
+declare v_sid uuid;
+begin
+  select submission_id into v_sid from public.payments where id = p_payment and status in ('belum', 'ditolak');
+  if v_sid is null or not public.owns_submission(v_sid) then raise exception 'Tagihan tidak ditemukan atau sudah diproses'; end if;
+  if p_path not like auth.uid()::text || '/%' then raise exception 'Lokasi berkas tidak valid'; end if;
+  update public.payments set proof_path = p_path, status = 'menunggu', paid_at = now(), admin_note = null where id = p_payment;
+  insert into public.submission_files(submission_id, kind, path, name, uploaded_by)
+  values (v_sid, 'bukti_bayar', p_path, p_name, auth.uid());
+end $$;
+
+revoke all on function public.author_add_file(uuid, text, text, text, text) from public;
+revoke all on function public.author_pay(uuid, text, text) from public;
+grant execute on function public.author_add_file(uuid, text, text, text, text) to authenticated;
+grant execute on function public.author_pay(uuid, text, text) to authenticated;
+grant execute on function public.submit_manuscript(jsonb) to anon, authenticated;
+
+alter table public.payments enable row level security;
+alter table public.submission_files enable row level security;
+
+drop policy if exists "submissions author read" on public.submissions;
+create policy "submissions author read" on public.submissions for select using (public.owns_submission(id));
+drop policy if exists "events author read" on public.submission_events;
+create policy "events author read" on public.submission_events for select using (public.owns_submission(submission_id));
+
+drop policy if exists "payments admin all" on public.payments;
+create policy "payments admin all" on public.payments for all using (public.is_admin()) with check (public.is_admin());
+drop policy if exists "payments author read" on public.payments;
+create policy "payments author read" on public.payments for select using (public.owns_submission(submission_id));
+
+drop policy if exists "files admin all" on public.submission_files;
+create policy "files admin all" on public.submission_files for all using (public.is_admin()) with check (public.is_admin());
+drop policy if exists "files author read" on public.submission_files;
+create policy "files author read" on public.submission_files for select using (public.owns_submission(submission_id));
+
+-- ---------- Storage ----------
+-- manuscripts: privat, maks 50 MB per berkas. Penulis menulis ke folder <user_id>/..., redaksi ke admin/<submission_id>/...
+insert into storage.buckets (id, name, public, file_size_limit)
+values ('manuscripts', 'manuscripts', false, 52428800) on conflict (id) do nothing;
+-- covers: publik, untuk gambar sampul katalog
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('covers', 'covers', true, 5242880, array['image/jpeg', 'image/png', 'image/webp']) on conflict (id) do nothing;
+
+drop policy if exists "ms author upload" on storage.objects;
+create policy "ms author upload" on storage.objects for insert to authenticated
+  with check (bucket_id = 'manuscripts' and (storage.foldername(name))[1] = auth.uid()::text);
+drop policy if exists "ms read" on storage.objects;
+create policy "ms read" on storage.objects for select to authenticated
+  using (bucket_id = 'manuscripts' and (
+    public.is_admin()
+    or (storage.foldername(name))[1] = auth.uid()::text
+    or exists (select 1 from public.submission_files f where f.path = storage.objects.name and public.owns_submission(f.submission_id))));
+drop policy if exists "ms admin write" on storage.objects;
+create policy "ms admin write" on storage.objects for insert to authenticated
+  with check (bucket_id = 'manuscripts' and public.is_admin());
+drop policy if exists "ms admin delete" on storage.objects;
+create policy "ms admin delete" on storage.objects for delete to authenticated
+  using (bucket_id = 'manuscripts' and public.is_admin());
+
+drop policy if exists "covers admin insert" on storage.objects;
+create policy "covers admin insert" on storage.objects for insert to authenticated
+  with check (bucket_id = 'covers' and public.is_admin());
+drop policy if exists "covers admin update" on storage.objects;
+create policy "covers admin update" on storage.objects for update to authenticated
+  using (bucket_id = 'covers' and public.is_admin());
+drop policy if exists "covers admin delete" on storage.objects;
+create policy "covers admin delete" on storage.objects for delete to authenticated
+  using (bucket_id = 'covers' and public.is_admin());
