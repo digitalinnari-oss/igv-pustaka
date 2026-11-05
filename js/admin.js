@@ -21,7 +21,14 @@
   $("#loginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const { error } = await sb.auth.signInWithPassword({ email: $("#lEmail").value, password: $("#lPass").value });
-    if (error) { $("#lMsg").innerHTML = `<div class="alert err">Email atau kata sandi salah.</div>`; return; }
+    if (error) {
+      const m = String(error.message || "").toLowerCase();
+      const txt = m.includes("invalid login") ? "Email atau kata sandi salah, atau akun ini belum dibuat di Supabase (Authentication → Users)."
+        : m.includes("not confirmed") ? "Email akun ini belum dikonfirmasi. Di Supabase buka Authentication → Users, lalu konfirmasi akun ini."
+        : m.includes("api key") || m.includes("apikey") ? "Kunci Supabase di js/config.js tidak valid. Salin ulang Publishable key."
+        : "Gagal masuk: " + error.message;
+      $("#lMsg").innerHTML = `<div class="alert err">${esc(txt)}</div>`; return;
+    }
     $("#lMsg").innerHTML = ""; boot();
   });
   $("#logout").addEventListener("click", async () => { await sb.auth.signOut(); boot(); });
