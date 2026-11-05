@@ -14,7 +14,7 @@ window.IGV_CONFIG = {
   /* GANTI teks di antara tanda kutip dengan Publishable key LENGKAP
      (salin dengan tombol salin di Supabase, jangan diblok manual).
      Kunci yang benar diawali sb_publishable_ dan TIDAK berakhiran ... */
-  SUPABASE_ANON_KEY: "TEMPEL_PUBLISHABLE_KEY_LENGKAP_DI_SINI",
+  SUPABASE_ANON_KEY: "sb_publishable_K7iTHQkR_JDuaW0UkSBjPg_pZ-mkIRt",
 
   brand: {
     name: "IGV Pustaka",
