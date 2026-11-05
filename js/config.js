@@ -11,7 +11,7 @@
    ============================================================ */
 window.IGV_CONFIG = {
   SUPABASE_URL: "https://eajyfevjwtohiulvurhh.supabase.co",
-SUPABASE_ANON_KEY: "sb_publishable_K7iTHQkR_JDuaW0UkSBjPg_pZ-mkIRt...",
+SUPABASE_ANON_KEY: "sb_publishable_K7iTHQkR_JDuaW0UkSBjPg_pZ-mkIRt",
 
   brand: {
     name: "IGV Pustaka",
