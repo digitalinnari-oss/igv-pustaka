@@ -24,7 +24,9 @@ Situs statis (HTML/CSS/JS murni, tanpa proses build) dengan database **Supabase*
 7. **Portal Penulis**: semua naskah, tagihan cicilan, bukti transfer, proof dari redaksi, dan revisi dalam satu dasbor.
 8. **Dasbor redaksi**: ringkasan bulanan, daftar "perlu tindakan", verifikasi pembayaran, kirim proof, dan tombol kabar WhatsApp berisi status terkini.
 
-## Langkah deploy (±30 menit)
+## Langkah deploy (±45–60 menit)
+
+Panduan lengkap langkah demi langkah ada di dokumen "Panduan Pemasangan IGV Press". Ringkasannya:
 
 ### 1. Supabase (database)
 1. Daftar di https://supabase.com → **New project** (pilih region Singapore).
@@ -41,7 +43,7 @@ Situs statis (HTML/CSS/JS murni, tanpa proses build) dengan database **Supabase*
 
 ### 2. GitHub (kode)
 1. Buat repository baru, misalnya `igv-press` (boleh private).
-2. Unggah semua file di folder ini (Add file → Upload files), atau:
+2. Unggah **isi** folder ini (bukan foldernya) lewat tautan *uploading an existing file*, sehingga `index.html` berada di tingkat atas repository. Atau lewat terminal:
    ```bash
    git init && git add . && git commit -m "Website IGV Press"
    git branch -M main
@@ -50,14 +52,25 @@ Situs statis (HTML/CSS/JS murni, tanpa proses build) dengan database **Supabase*
    ```
 
 ### 3. Cloudflare Pages (hosting gratis)
-1. Masuk https://dash.cloudflare.com → **Workers & Pages → Create → Pages → Connect to Git**.
+1. Masuk https://dash.cloudflare.com → **Workers & Pages → Create application → tab Pages → Import an existing Git repository**.
 2. Pilih repository `igv-press`.
-3. Build settings: **Framework preset: None**, **Build command: (kosong)**, **Build output directory: `/`**.
+3. Build settings: **Framework preset: None**, **Build command: `exit 0`**, **Build output directory: `/`**.
 4. **Save and Deploy**. Situs aktif di `https://igv-press.pages.dev` (subdomain gratis).
 5. Setiap kali Anda push ke GitHub, situs otomatis diperbarui.
 
 ### 4. Domain sendiri (opsional)
 Subdomain `*.pages.dev` gratis selamanya. Domain sendiri (`igvpress.id`, `.co.id`, `.com`) tetap harus dibeli di registrar (±Rp150–350 ribu/tahun), lalu hubungkan di **Pages → Custom domains**. SSL dari Cloudflare gratis.
+
+## Peran redaksi
+| Peran | Bisa mengakses |
+|---|---|
+| Super admin | Semua menu: Ringkasan, Naskah, Katalog, Call for chapter, Harga & paket, Konten halaman, **Tampilan**, **Staf redaksi** |
+| Editor | Ringkasan, Naskah (status, tagihan, verifikasi, berkas), Katalog, Call for chapter |
+
+- Super admin menambah staf di **Staf redaksi** cukup dengan email; staf masuk lewat tombol **Kirim tautan masuk ke email** di `/admin`.
+- Sistem menolak menghapus atau menurunkan super admin terakhir.
+- **Tampilan**: logo, favicon, warna utama & aksen (6 pilihan siap pakai atau warna bebas), huruf judul & isi, urutan/nama/tampil-sembunyi tiap bagian dan menu.
+- Di Supabase **Authentication → URL Configuration → Redirect URLs** isi `https://<situs>/**` agar tautan masuk berfungsi untuk `/penulis` dan `/admin`.
 
 ## Alur kerja harian redaksi
 1. **Ringkasan** menampilkan naskah baru, bukti bayar yang menunggu, dan naskah yang belum punya jadwal tagihan. Klik **Buka** untuk langsung ke detailnya.

@@ -20,6 +20,7 @@
   const tx = (s) => String(s ?? "").split("{nama}").join(C.brand.name || "").split("{perusahaan}").join(C.brand.company || "");
   function applySettings() {
     const B = C.brand || {};
+    D.applyLook(C);
     $$("[data-b]").forEach((el) => (el.textContent = B[el.dataset.b] || el.textContent));
     $("#pTitle").textContent = tx((C.portal || {}).title || "Portal Penulis");
     $("#pLead").textContent = tx((C.portal || {}).lead || "");

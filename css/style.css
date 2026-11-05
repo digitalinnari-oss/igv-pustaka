@@ -56,7 +56,7 @@ p{margin:0}
 .nav-links a{display:block;padding:8px 10px;border-radius:8px;text-decoration:none;color:var(--ink);font-size:.9rem;font-weight:500}
 .nav-links a:hover,.nav-links a.active{background:var(--tint)}
 .menu-btn{display:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:8px 12px;font:inherit;font-size:.9rem;cursor:pointer}
-@media (max-width:1180px){
+@media (max-width:1279px){
   .menu-btn{display:block}
   .nav-links{position:absolute;left:0;right:0;top:100%;flex-direction:column;align-items:stretch;background:var(--paper);border-bottom:1px solid var(--line);padding:8px max(16px,env(safe-area-inset-right,0px)) 16px max(16px,env(safe-area-inset-left,0px))}
   .nav-links:not(.open){display:none}
@@ -315,3 +315,15 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--cloth)}
 .ms-tl .timeline{margin-top:12px}
 .ms-tl .timeline small{display:block;color:var(--muted)}
 .new-form{margin-top:20px}
+
+/* ===== Tema dari admin (Tampilan) ===== */
+:root.themed{--cloth:var(--brand);--foil:var(--accent);--foil-soft:color-mix(in srgb,var(--accent) 22%,#fff);--tint:color-mix(in srgb,var(--brand) 10%,#fff)}
+@media (prefers-color-scheme: dark){:root.themed:not([data-theme="light"]){--cloth:color-mix(in srgb,var(--brand) 55%,#fff);--foil:color-mix(in srgb,var(--accent) 75%,#fff);--foil-soft:color-mix(in srgb,var(--accent) 25%,#0C1614);--tint:color-mix(in srgb,var(--brand) 22%,#0C1614)}}
+:root.themed[data-theme="dark"]{--cloth:color-mix(in srgb,var(--brand) 55%,#fff);--foil:color-mix(in srgb,var(--accent) 75%,#fff);--foil-soft:color-mix(in srgb,var(--accent) 25%,#0C1614);--tint:color-mix(in srgb,var(--brand) 22%,#0C1614)}
+.brand-mark.has-logo{background:none;box-shadow:none;width:auto;height:40px;border-radius:0;display:flex;align-items:center}
+.brand-mark.has-logo::after{display:none}
+.brand-mark.has-logo img{height:40px;width:auto;max-width:140px;object-fit:contain;display:block}
+
+.nav-links a{white-space:nowrap}
+.nav-links a.btn-primary,.nav-links a.btn-primary:hover{color:var(--cloth-ink);background:var(--cloth)}
+.brand b,.brand small{white-space:nowrap}

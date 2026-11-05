@@ -9,17 +9,37 @@
   const opts = (v) => STAT.map(([id, l]) => `<option value="${id}"${id === v ? " selected" : ""}>${l}</option>`).join("");
   $("#sFilter").innerHTML += STAT.map(([id, l]) => `<option value="${id}">${l}</option>`).join("");
 
+  let ROLE = null, ME = "";
   async function boot() {
     const { data: { session } } = await sb.auth.getSession();
     if (!session) { $("#loginForm").hidden = false; $("#app").hidden = true; $("#logout").hidden = true; return; }
-    const { data: me } = await sb.from("admins").select("user_id").eq("user_id", session.user.id).maybeSingle();
-    if (!me) { $("#loginForm").hidden = false; $("#lMsg").innerHTML = `<div class="alert err">Akun ini belum terdaftar sebagai admin. Tambahkan UID-nya ke tabel admins.</div>`; await sb.auth.signOut(); return; }
+    const { data: role, error: rErr } = await sb.rpc("my_role");
+    if (rErr) console.error(rErr);
+    if (!role) {
+      $("#loginForm").hidden = false; $("#app").hidden = true;
+      $("#lMsg").innerHTML = `<div class="alert err">${esc(session.user.email || "Akun ini")} belum terdaftar sebagai staf redaksi. Minta super admin menambahkan email ini di menu Staf redaksi.</div>`;
+      await sb.auth.signOut(); return;
+    }
+    ROLE = role; ME = (session.user.email || "").toLowerCase();
+    $$(".super-only").forEach((t) => (t.hidden = role !== "super"));
+    $("#roleLine").textContent = `Masuk sebagai ${ME} · ${role === "super" ? "Super admin" : "Editor"}`;
     $("#loginForm").hidden = true; $("#app").hidden = false; $("#logout").hidden = false;
     loadSubs(); loadBooks(); loadCalls(); loadSettings();
+    if (role === "super") loadStaff();
   }
+
+  $("#lMagic").addEventListener("click", async () => {
+    const em = $("#lEmail").value.trim().toLowerCase();
+    if (!/^\S+@\S+\.\S+$/.test(em)) { $("#lMsg").innerHTML = `<div class="alert err">Isi email terlebih dahulu.</div>`; return; }
+    const { error } = await sb.auth.signInWithOtp({ email: em, options: { emailRedirectTo: location.origin + location.pathname } });
+    $("#lMsg").innerHTML = error ? `<div class="alert err">Tautan belum terkirim: ${esc(error.message)}</div>`
+      : `<div class="alert ok">Tautan masuk dikirim ke <b>${esc(em)}</b>. Buka email (cek juga Spam) dan klik tautannya dari perangkat ini.</div>`;
+  });
+  sb.auth.onAuthStateChange((ev) => { if (ev === "SIGNED_IN" && $("#app").hidden) boot(); });
 
   $("#loginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
+    if (!$("#lPass").value) { $("#lMsg").innerHTML = `<div class="alert err">Isi kata sandi, atau klik "Kirim tautan masuk ke email".</div>`; return; }
     const { error } = await sb.auth.signInWithPassword({ email: $("#lEmail").value, password: $("#lPass").value });
     if (error) {
       const m = String(error.message || "").toLowerCase();
@@ -328,6 +348,26 @@
     ] }
   };
 
+  const SECNAME = { profil: "Profil", layanan: "Layanan", harga: "Harga", studio: "Studio Penulis", katalog: "Katalog", call: "Call for Chapter", lacak: "Lacak Naskah", kirim: "Kirim Naskah", faq: "FAQ" };
+  SCHEMA.tampil = { t: "obj", fields: [
+    ["brand", { t: "obj", label: "Logo & ikon", fields: [
+      ["logoUrl", { t: "image", label: "Logo (PNG transparan disarankan, tinggi ±80 px)", hint: "Menggantikan ikon buku di menu atas, portal, dan admin." }],
+      ["faviconUrl", { t: "image", label: "Favicon (ikon tab browser, persegi 64×64 px)", hint: "Kosongkan untuk memakai logo." }]] }],
+    ["theme", { t: "obj", label: "Warna & huruf", fields: [
+      ["presets", { t: "palette", label: "Pilihan warna siap pakai" }],
+      ["brand", { t: "color", label: "Warna utama (tombol, tautan, pita)" }],
+      ["accent", { t: "color", label: "Warna aksen (label kecil, sorotan)" }],
+      ["display", { t: "select", label: "Huruf judul", opts: D.fonts.display.map((f) => [f, f]) }],
+      ["body", { t: "select", label: "Huruf isi", opts: D.fonts.body.map((f) => [f, f]) }]] }],
+    ["layout", { t: "obj", label: "Menu & bagian halaman depan", fields: [
+      ["sections", { t: "list", fixed: true, item: "label", showFlag: "show", label: "Urutan bagian (↑ ↓ untuk memindah)", hint: "Urutan di sini menjadi urutan bagian di halaman depan dan di menu. Nama bisa diubah; matikan \"Tampilkan\" untuk menyembunyikan.",
+        of: { t: "obj", fields: [["label", T("Nama di menu")], ["show", { t: "bool", label: "Tampilkan bagian ini" }]] } }],
+      ["portalLink", { t: "bool", label: "Tampilkan tautan Portal Penulis di menu" }],
+      ["portalLabel", T("Nama tautan Portal Penulis")]] }]
+  ] };
+  const STORE = { pricing: "pricing", content: "content", tampil: "content" };
+  const ROOT = { pricing: "#edPricing", content: "#edContent", tampil: "#edTampil" };
+
   const node = (html) => { const t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild; };
   function dflt(n) {
     if (n.t === "obj") { const o = {}; n.fields.forEach(([k, f]) => (o[k] = dflt(f))); return o; }
@@ -345,20 +385,20 @@
       const box = node(`<fieldset class="ed-obj">${lab ? `<legend>${esc(lab)}</legend>` : ""}<div class="ed-grid"></div></fieldset>`);
       n.fields.forEach(([kk, f]) => {
         const c = build(f, h[k], kk);
-        if (["lines", "area", "list", "obj", "addons"].includes(f.t)) c.classList.add("wide");
+        if (["lines", "area", "list", "obj", "addons", "palette"].includes(f.t)) c.classList.add("wide");
         box.lastElementChild.appendChild(c);
       });
       return box;
     }
     if (n.t === "list") {
       if (!Array.isArray(h[k])) h[k] = [];
-      const box = node(`<div class="ed-list"><div class="ed-list-head"><b>${esc(lab)}</b><button type="button" class="btn btn-ghost btn-sm">+ Tambah</button></div><div class="ed-items"></div></div>`);
+      const box = node(`<div class="ed-list"><div class="ed-list-head"><b>${esc(lab)}</b>${n.fixed ? "" : `<button type="button" class="btn btn-ghost btn-sm">+ Tambah</button>`}</div>${n.hint ? `<span class="hint">${esc(n.hint)}</span>` : ""}<div class="ed-items"></div></div>`);
       const items = box.lastElementChild;
-      const title = (it, i) => String((n.item && it[n.item]) || "Butir baru " + (i + 1)).slice(0, 90);
+      const title = (it, i) => String((n.item && it[n.item]) || "Butir baru " + (i + 1)).slice(0, 90) + (n.showFlag && it[n.showFlag] === false ? " (disembunyikan)" : "");
       const draw = (openIdx) => {
         items.innerHTML = "";
         h[k].forEach((it, i) => {
-          const card = node(`<details class="ed-item"${i === openIdx ? " open" : ""}><summary><span>${esc(title(it, i))}</span><span class="ed-actions"><button type="button" data-a="up" aria-label="Naikkan">↑</button><button type="button" data-a="down" aria-label="Turunkan">↓</button><button type="button" data-a="del">Hapus</button></span></summary></details>`);
+          const card = node(`<details class="ed-item"${i === openIdx ? " open" : ""}><summary><span>${esc(title(it, i))}</span><span class="ed-actions"><button type="button" data-a="up" aria-label="Naikkan">↑</button><button type="button" data-a="down" aria-label="Turunkan">↓</button>${n.fixed ? "" : `<button type="button" data-a="del">Hapus</button>`}</span></summary></details>`);
           card.appendChild(build(n.of, h[k], i));
           card.addEventListener("input", () => { card.querySelector("summary > span").textContent = title(it, i); });
           card.querySelector(".ed-actions").addEventListener("click", (e) => {
@@ -377,10 +417,44 @@
         });
         if (!h[k].length) items.innerHTML = `<p class="hint">Belum ada butir. Klik "+ Tambah".</p>`;
       };
-      box.querySelector(".ed-list-head button").addEventListener("click", () => { h[k].push(dflt(n.of)); draw(h[k].length - 1); n.onChange && n.onChange(); });
+      if (!n.fixed) box.querySelector(".ed-list-head button").addEventListener("click", () => { h[k].push(dflt(n.of)); draw(h[k].length - 1); n.onChange && n.onChange(); });
       box.addEventListener("change", () => n.onChange && n.onChange());
       draw();
       return box;
+    }
+    if (n.t === "palette") {
+      const w = node(`<div class="field wide"><span class="lbl">${esc(lab)}</span><div class="palettes"></div></div>`);
+      w.lastElementChild.innerHTML = D.palettes.map((p, i) => `<button type="button" data-i="${i}"><i style="background:${p.brand};--a:${p.accent}"></i>${esc(p.name)}</button>`).join("");
+      w.addEventListener("click", (e) => {
+        const b = e.target.closest("[data-i]"); if (!b) return;
+        const p = D.palettes[+b.dataset.i]; h.brand = p.brand; h.accent = p.accent; renderEditor("tampil");
+      });
+      return w;
+    }
+    if (n.t === "color") {
+      const w = node(`<div class="field"><label for="${id}">${esc(lab)}</label><div class="ed-color"><input type="color" id="${id}"><input type="text" maxlength="7" aria-label="Kode warna"></div></div>`);
+      const [c, t] = w.querySelectorAll("input"); c.value = t.value = h[k] || "#000000";
+      c.addEventListener("input", () => { h[k] = t.value = c.value; });
+      t.addEventListener("input", () => { if (/^#[0-9a-f]{6}$/i.test(t.value)) { h[k] = c.value = t.value; } });
+      return w;
+    }
+    if (n.t === "image") {
+      const w = node(`<div class="field"><label for="${id}">${esc(lab)}</label><div class="ed-img"><span class="thumb"></span><div style="display:grid;gap:6px"><input type="file" id="${id}" accept="image/png,image/jpeg,image/webp"><button type="button" class="btn btn-ghost btn-sm">Hapus gambar</button><span class="hint"></span></div></div></div>`);
+      const thumb = w.querySelector(".thumb"), inp = w.querySelector("input"), del = w.querySelector("button"), msg = w.querySelector(".hint");
+      const show = () => { thumb.innerHTML = h[k] ? `<img src="${esc(h[k])}" alt="">` : `<span class="hint">kosong</span>`; del.hidden = !h[k]; };
+      show(); if (n.hint) msg.textContent = n.hint;
+      inp.addEventListener("change", async () => {
+        const f = inp.files[0]; if (!f) return;
+        if (f.size > 2 * 1024 * 1024) { msg.textContent = "Maksimal 2 MB."; return; }
+        msg.textContent = "Mengunggah…";
+        const path = `brand/${Date.now()}-${f.name.normalize("NFKD").replace(/[^\w.\-]+/g, "_").slice(-60)}`;
+        const up = await sb.storage.from("covers").upload(path, f, { contentType: f.type });
+        if (up.error) { msg.textContent = "Gagal: " + up.error.message; return; }
+        h[k] = sb.storage.from("covers").getPublicUrl(path).data.publicUrl; show();
+        msg.textContent = "Terunggah. Tekan Simpan tampilan untuk menerapkan.";
+      });
+      del.addEventListener("click", () => { h[k] = ""; inp.value = ""; show(); msg.textContent = "Dihapus. Tekan Simpan tampilan untuk menerapkan."; });
+      return w;
     }
     if (n.t === "bool") {
       const w = node(`<label class="ed-bool"><input type="checkbox" id="${id}"> ${esc(lab)}</label>`);
@@ -426,11 +500,18 @@
   }
 
   function renderEditor(key) {
-    const root = $(key === "pricing" ? "#edPricing" : "#edContent");
+    const root = $(ROOT[key]);
     if (key === "pricing") addonFields.clear();
     root.innerHTML = "";
-    const holder = { v: ED[key] };
-    SCHEMA[key].fields.forEach(([k, f]) => root.appendChild(build(f, holder.v, k)));
+    const v = ED[STORE[key]];
+    if (key === "tampil") {
+      v.theme = Object.assign({}, D.content.theme, v.theme || {});
+      const L = v.layout = Object.assign({}, D.content.layout, v.layout || {});
+      const known = (L.sections || []).filter((x) => SECNAME[x.id]);
+      Object.keys(SECNAME).forEach((id) => { if (!known.some((x) => x.id === id)) known.push({ id, label: SECNAME[id], show: true }); });
+      L.sections = known;
+    }
+    SCHEMA[key].fields.forEach(([k, f]) => root.appendChild(build(f, v, k)));
   }
 
   function validate(key) {
@@ -460,25 +541,75 @@
     const { data, error } = await sb.from("site_settings").select("key,value");
     if (error) console.error(error);
     (data || []).forEach((r) => { if (ED[r.key]) ED[r.key] = D.merge(clone(r.key === "pricing" ? D.pricing : D.content), r.value); });
-    renderEditor("pricing"); renderEditor("content");
+    renderEditor("pricing"); renderEditor("content"); renderEditor("tampil");
+    D.applyLook(ED.content);
   }
   $$("[data-save]").forEach((b) => b.addEventListener("click", async () => {
-    const key = b.dataset.save, msg = $("#msg-" + key);
+    const name = b.dataset.save, key = STORE[name], msg = $("#msg-" + name);
     const bad = validate(key);
     if (bad) { msg.innerHTML = `<span style="color:var(--bad)">${esc(bad)}</span>`; return; }
     b.disabled = true; msg.textContent = "Menyimpan…";
     const { data: { user } } = await sb.auth.getUser();
     const { error } = await sb.from("site_settings").upsert({ key, value: ED[key], updated_at: new Date().toISOString(), updated_by: user ? user.id : null });
     b.disabled = false;
+    if (!error && name === "tampil") D.applyLook(ED.content);
     msg.innerHTML = error ? `<span style="color:var(--bad)">Gagal menyimpan: ${esc(error.message)}</span>` : `<span style="color:var(--ok)">Tersimpan ${new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}. Situs langsung memakai versi ini.</span>`;
   }));
   $$("[data-reset]").forEach((b) => b.addEventListener("click", () => {
     const key = b.dataset.reset;
     if (b.dataset.sure !== "1") { b.dataset.sure = "1"; b.textContent = "Klik lagi untuk mengembalikan"; setTimeout(() => { b.dataset.sure = ""; b.textContent = "Kembalikan ke bawaan"; }, 4000); return; }
     b.dataset.sure = ""; b.textContent = "Kembalikan ke bawaan";
-    ED[key] = clone(key === "pricing" ? D.pricing : D.content); renderEditor(key);
+    if (key === "pricing") ED.pricing = clone(D.pricing);
+    else { const keep = { theme: ED.content.theme, layout: ED.content.layout, logoUrl: (ED.content.brand || {}).logoUrl, faviconUrl: (ED.content.brand || {}).faviconUrl };
+      ED.content = clone(D.content); ED.content.theme = keep.theme; ED.content.layout = keep.layout;
+      ED.content.brand.logoUrl = keep.logoUrl || ""; ED.content.brand.faviconUrl = keep.faviconUrl || ""; renderEditor("tampil"); }
+    renderEditor(key);
     $("#msg-" + key).textContent = "Nilai bawaan dimuat. Tekan Simpan untuk menerapkannya di situs.";
   }));
+
+  /* =============== STAF REDAKSI (super admin) =============== */
+  let staff = [];
+  async function loadStaff() {
+    const { data, error } = await sb.from("staff").select("*").order("role").order("email");
+    if (error) { $("#staffRows").innerHTML = `<tr><td colspan="4" class="note">Gagal memuat: ${esc(error.message)}</td></tr>`; return; }
+    staff = data || []; renderStaff();
+  }
+  function renderStaff() {
+    const supers = staff.filter((x) => x.role === "super").length;
+    $("#staffRows").innerHTML = staff.map((x) => {
+      const self = x.email === ME, lastSuper = x.role === "super" && supers <= 1;
+      return `<tr data-email="${esc(x.email)}"><td>${esc(x.email)}${self ? ` <span class="pill">Anda</span>` : ""}</td><td>${esc(x.name || "-")}</td>
+        <td><select class="sr" aria-label="Peran"${lastSuper ? " disabled title=\"Harus ada minimal satu super admin\"" : ""}><option value="editor"${x.role === "editor" ? " selected" : ""}>Editor</option><option value="super"${x.role === "super" ? " selected" : ""}>Super admin</option></select></td>
+        <td class="row-actions">${self || lastSuper ? `<span class="note">—</span>` : `<button class="btn btn-ghost btn-sm sdel" type="button">Hapus</button>`}</td></tr>`;
+    }).join("") || `<tr><td colspan="4" class="note">Belum ada staf.</td></tr>`;
+  }
+  $("#staffForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = $("#sfEmail").value.trim().toLowerCase(), msg = $("#sfMsg");
+    if (!/^\S+@\S+\.\S+$/.test(email)) { msg.innerHTML = `<div class="alert err">Tulis email staf dengan lengkap.</div>`; return; }
+    if (staff.some((x) => x.email === email)) { msg.innerHTML = `<div class="alert err">${esc(email)} sudah terdaftar.</div>`; return; }
+    const { data: { user } } = await sb.auth.getUser();
+    const { error } = await sb.from("staff").insert({ email, name: $("#sfName").value.trim() || null, role: $("#sfRole").value, created_by: user ? user.id : null });
+    msg.innerHTML = error ? `<div class="alert err">Gagal: ${esc(error.message)}</div>`
+      : `<div class="alert ok">${esc(email)} ditambahkan. Minta ia membuka <b>${esc(location.origin + location.pathname)}</b>, mengisi email, lalu klik "Kirim tautan masuk ke email".</div>`;
+    if (!error) { e.target.reset(); loadStaff(); }
+  });
+  $("#staffRows").addEventListener("change", async (e) => {
+    const sel = e.target.closest(".sr"); if (!sel) return;
+    const email = sel.closest("tr").dataset.email;
+    const { error } = await sb.from("staff").update({ role: sel.value }).eq("email", email);
+    $("#sfMsg").innerHTML = error ? `<div class="alert err">Gagal mengubah peran: ${esc(error.message)}</div>` : `<div class="alert ok">Peran ${esc(email)} diubah.</div>`;
+    loadStaff();
+    if (!error && email === ME && sel.value !== "super") boot();
+  });
+  $("#staffRows").addEventListener("click", async (e) => {
+    const b = e.target.closest(".sdel"); if (!b) return;
+    if (b.dataset.sure !== "1") { b.dataset.sure = "1"; b.textContent = "Klik lagi untuk menghapus"; return; }
+    const email = b.closest("tr").dataset.email;
+    const { error } = await sb.from("staff").delete().eq("email", email);
+    $("#sfMsg").innerHTML = error ? `<div class="alert err">Gagal menghapus: ${esc(error.message)}</div>` : `<div class="alert ok">${esc(email)} tidak lagi punya akses redaksi.</div>`;
+    loadStaff();
+  });
 
   boot();
 })();

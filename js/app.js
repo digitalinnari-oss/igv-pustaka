@@ -31,8 +31,30 @@
 
   /* ================= RENDER KONTEN ================= */
   let heroTouched = false;
+  function renderLayout() {
+    const L = C.layout || {}, secs = (L.sections || []).filter((x) => x && document.getElementById(x.id));
+    ((D.content.layout || {}).sections || []).forEach((d) => { if (!secs.some((x) => x.id === d.id)) secs.push(d); });
+    const main = $("main");
+    secs.forEach((x) => { const el = document.getElementById(x.id); main.appendChild(el); el.hidden = !x.show; });
+    const shown = secs.filter((x) => x.show);
+    const nav = shown.filter((x) => x.id !== "kirim").map((x) => `<li><a href="#${esc(x.id)}">${esc(tx(x.label))}</a></li>`);
+    if (L.portalLink !== false) nav.push(`<li><a href="penulis.html">${esc(tx(L.portalLabel || "Portal Penulis"))}</a></li>`);
+    const kirim = shown.find((x) => x.id === "kirim");
+    if (kirim) nav.push(`<li><a class="btn btn-primary btn-sm" href="#kirim">${esc(tx(kirim.label))}</a></li>`);
+    $("#navLinks").innerHTML = nav.join("");
+    const foot = shown.filter((x) => x.id !== "kirim").slice(0, 5).map((x) => `<li><a href="#${esc(x.id)}">${esc(tx(x.label))}</a></li>`);
+    if (L.portalLink !== false) foot.push(`<li><a href="penulis.html">${esc(tx(L.portalLabel || "Portal Penulis"))}</a></li>`);
+    foot.push(`<li><a href="admin.html">Masuk redaksi</a></li>`);
+    $("#footLinks").innerHTML = foot.join("");
+    $$(".hero .btn-row a[href='#kirim']").forEach((a) => (a.hidden = !kirim));
+    $$(".hero .btn-row a[href='#studio']").forEach((a) => (a.hidden = !shown.some((x) => x.id === "studio")));
+    setupSpy();
+  }
+
   function renderContent() {
     B = C.brand || {};
+    D.applyLook(C);
+    renderLayout();
     $$("[data-b]").forEach((el) => { el.textContent = B[el.dataset.b] || ""; });
     $$("[data-c]").forEach((el) => { el.textContent = tx(get(C, el.dataset.c)); });
     $$("[data-sec]").forEach((el) => {
@@ -198,12 +220,15 @@
   const menuBtn = $("#menuBtn"), links = $("#navLinks");
   menuBtn.addEventListener("click", () => { const open = links.classList.toggle("open"); menuBtn.setAttribute("aria-expanded", open); });
   links.addEventListener("click", (e) => { if (e.target.closest("a")) { links.classList.remove("open"); menuBtn.setAttribute("aria-expanded", "false"); } });
-  if ("IntersectionObserver" in window) {
+  let spy = null;
+  function setupSpy() {
+    if (!("IntersectionObserver" in window)) return;
+    if (spy) spy.disconnect();
     const map = new Map($$(".nav-links a[href^='#']").map((a) => [a.getAttribute("href").slice(1), a]));
-    const io = new IntersectionObserver((ents) => ents.forEach((en) => {
+    spy = new IntersectionObserver((ents) => ents.forEach((en) => {
       if (en.isIntersecting && map.has(en.target.id)) { map.forEach((a) => a.classList.remove("active")); map.get(en.target.id).classList.add("active"); }
     }), { rootMargin: "-45% 0px -50% 0px" });
-    map.forEach((_, id) => { const s = document.getElementById(id); if (s) io.observe(s); });
+    map.forEach((_, id) => { const s = document.getElementById(id); if (s) spy.observe(s); });
   }
   let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { renderContent(); renderPricing(); calc(); }, 200); });
 

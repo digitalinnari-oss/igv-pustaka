@@ -1,19 +1,16 @@
 /* ============================================================
    KONFIGURASI SITUS
-   Kunci Supabase: Supabase > Project Settings > API Keys.
-   Publishable key aman dipasang di situs; keamanan data dijaga
+   SUPABASE_URL & SUPABASE_ANON_KEY: Supabase > Project Settings > API.
+   Anon key memang aman dipasang di frontend; keamanan data dijaga
    oleh Row Level Security (lihat supabase/schema.sql).
+   Jika dua nilai ini kosong, situs berjalan dalam MODE DEMO.
 
    Identitas (brand) di bawah hanya nilai awal. Setelah situs
-   terhubung, ubah identitas, harga, dan semua teks dari
-   admin.html > "Konten halaman" / "Harga & paket".
+   terhubung ke Supabase, ubah identitas, harga, dan semua teks
+   dari admin.html > "Konten halaman" / "Harga & paket".
    ============================================================ */
 window.IGV_CONFIG = {
   SUPABASE_URL: "https://eajyfevjwtohiulvurhh.supabase.co",
-
-  /* GANTI teks di antara tanda kutip dengan Publishable key LENGKAP
-     (salin dengan tombol salin di Supabase, jangan diblok manual).
-     Kunci yang benar diawali sb_publishable_ dan TIDAK berakhiran ... */
   SUPABASE_ANON_KEY: "sb_publishable_K7iTHQkR_JDuaW0UkSBjPg_pZ-mkIRt",
 
   brand: {

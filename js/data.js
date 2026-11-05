@@ -92,8 +92,27 @@ window.IGV_DATA = {
       name: "IGV Press", company: "PT. Inovasi Global Ventures",
       tagline: "Penerbit buku akademik untuk dosen dan peneliti",
       whatsapp: "6281200000000", email: "redaksi@igvpress.id",
-      address: "Jakarta, Indonesia", ikapi: "", isbnPrefix: "978-634-XXXX"
+      address: "Jakarta, Indonesia", ikapi: "", isbnPrefix: "978-634-XXXX",
+      logoUrl: "", faviconUrl: ""
     }, (window.IGV_CONFIG || {}).brand || {}),
+
+    /* Tampilan: diatur super admin di admin.html > Tampilan */
+    theme: { brand: "#0F4C45", accent: "#B8860B", display: "Gloock", body: "Plus Jakarta Sans" },
+    layout: {
+      sections: [
+        { id: "profil",  label: "Profil",           show: true },
+        { id: "layanan", label: "Layanan",          show: true },
+        { id: "harga",   label: "Harga",            show: true },
+        { id: "studio",  label: "Studio Penulis",   show: true },
+        { id: "katalog", label: "Katalog",          show: true },
+        { id: "call",    label: "Call for Chapter", show: true },
+        { id: "lacak",   label: "Lacak Naskah",     show: true },
+        { id: "kirim",   label: "Kirim Naskah",     show: true },
+        { id: "faq",     label: "FAQ",              show: true }
+      ],
+      portalLink: true,
+      portalLabel: "Portal Penulis"
+    },
 
     hero: {
       eyebrow: "Penerbit buku akademik · ISBN Perpusnas RI",
@@ -270,6 +289,51 @@ window.IGV_DATA = {
     { id: "cetak",    label: "Cetak & kirim",         hint: "Produksi eksemplar dan pengiriman." },
     { id: "terbit",   label: "Terbit",                hint: "Buku tampil di katalog dan toko daring." }
   ],
+
+  fonts: {
+    display: ["Gloock", "Playfair Display", "Lora", "Fraunces", "DM Serif Display", "Merriweather"],
+    body: ["Plus Jakarta Sans", "Source Sans 3", "Nunito Sans", "Work Sans", "Lato"]
+  },
+  palettes: [
+    { name: "Hijau zamrud", brand: "#0F4C45", accent: "#B8860B" },
+    { name: "Biru akademik", brand: "#1E3A6E", accent: "#C8962E" },
+    { name: "Marun kampus", brand: "#7A1F2B", accent: "#C9A227" },
+    { name: "Ungu toga", brand: "#4B2E6F", accent: "#D4A017" },
+    { name: "Biru laut", brand: "#0B5E7A", accent: "#E07A1F" },
+    { name: "Arang & emas", brand: "#2B2B2B", accent: "#B8860B" }
+  ],
+
+  /* Terapkan logo, favicon, warna, dan huruf ke halaman mana pun. */
+  applyLook: function (content) {
+    const c = content || {}, t = c.theme || {}, b = c.brand || {}, root = document.documentElement;
+    const hex = (v) => /^#[0-9a-f]{6}$/i.test(v || "") ? v : null;
+    if (hex(t.brand) || hex(t.accent)) {
+      root.classList.add("themed");
+      root.style.setProperty("--brand", hex(t.brand) || "#0F4C45");
+      root.style.setProperty("--accent", hex(t.accent) || "#B8860B");
+    }
+    const F = window.IGV_DATA.fonts, fams = [];
+    if (t.display && F.display.includes(t.display)) { root.style.setProperty("--f-display", `"${t.display}", Georgia, serif`); fams.push(t.display); }
+    if (t.body && F.body.includes(t.body)) { root.style.setProperty("--f-body", `"${t.body}", "Segoe UI", system-ui, sans-serif`); fams.push(t.body + ":wght@400;500;600;700"); }
+    const custom = fams.filter((f) => !/^(Gloock|Plus Jakarta Sans)/.test(f));
+    if (custom.length && !document.getElementById("igvFonts")) {
+      const l = document.createElement("link"); l.id = "igvFonts"; l.rel = "stylesheet";
+      l.href = "https://fonts.googleapis.com/css2?" + custom.map((f) => "family=" + f.replace(/ /g, "+")).join("&") + "&display=swap";
+      document.head.appendChild(l);
+    }
+    const ico = b.faviconUrl || b.logoUrl;
+    if (ico) {
+      let l = document.querySelector("link[rel='icon']");
+      if (!l) { l = document.createElement("link"); l.rel = "icon"; document.head.appendChild(l); }
+      l.href = ico;
+    }
+    document.querySelectorAll(".brand-mark").forEach((m) => {
+      if (b.logoUrl) {
+        m.classList.add("has-logo"); m.innerHTML = "";
+        const img = document.createElement("img"); img.src = b.logoUrl; img.alt = ""; m.appendChild(img);
+      } else { m.classList.remove("has-logo"); m.innerHTML = ""; }
+    });
+  },
 
   /* Gabungkan nilai database ke atas nilai bawaan. Array diganti utuh. */
   merge: function merge(base, over) {

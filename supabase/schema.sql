@@ -383,3 +383,80 @@ create policy "covers admin update" on storage.objects for update to authenticat
 drop policy if exists "covers admin delete" on storage.objects;
 create policy "covers admin delete" on storage.objects for delete to authenticated
   using (bucket_id = 'covers' and public.is_admin());
+
+
+-- =====================================================================
+--  TAHAP 3 — Peran staf redaksi: Super admin & Editor
+--  Super admin : semua menu, termasuk Harga, Konten, Tampilan, Staf.
+--  Editor      : naskah, pembayaran, berkas, katalog, call for chapter.
+--  Aman dijalankan ulang.
+-- =====================================================================
+
+create table if not exists public.staff (
+  email text primary key check (email = lower(email) and email like '%@%'),
+  name text,
+  role text not null default 'editor' check (role in ('super', 'editor')),
+  created_at timestamptz not null default now(),
+  created_by uuid references auth.users(id) on delete set null
+);
+
+-- Admin dari tahap sebelumnya otomatis menjadi super admin
+insert into public.staff(email, role)
+select lower(u.email), 'super' from public.admins a join auth.users u on u.id = a.user_id
+where u.email is not null
+on conflict (email) do nothing;
+
+create or replace function public.jwt_email()
+returns text language sql stable as $$ select lower(coalesce(auth.jwt() ->> 'email', '')) $$;
+
+create or replace function public.my_role()
+returns text language sql stable security definer set search_path = public as $$
+  select case
+    when auth.uid() is null then null
+    when exists (select 1 from public.staff where email = public.jwt_email() and role = 'super') then 'super'
+    when exists (select 1 from public.admins where user_id = auth.uid()) then 'super'
+    when exists (select 1 from public.staff where email = public.jwt_email()) then 'editor'
+    else null end;
+$$;
+
+create or replace function public.is_admin()
+returns boolean language sql stable security definer set search_path = public as $$ select public.my_role() is not null; $$;
+create or replace function public.is_super()
+returns boolean language sql stable security definer set search_path = public as $$ select coalesce(public.my_role() = 'super', false); $$;
+
+grant execute on function public.my_role() to authenticated;
+
+-- Harus selalu ada minimal satu super admin; staf yang dihapus/diturunkan
+-- juga kehilangan akses lama dari tabel admins.
+create or replace function public.staff_guard()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if old.role = 'super' and (tg_op = 'DELETE' or new.role <> 'super' or new.email <> old.email)
+     and not exists (select 1 from public.staff where role = 'super' and email <> old.email) then
+    raise exception 'Harus ada minimal satu super admin';
+  end if;
+  if tg_op = 'DELETE' or new.role <> 'super' or new.email <> old.email then
+    delete from public.admins where user_id in (select id from auth.users where lower(email) = old.email);
+  end if;
+  return case when tg_op = 'DELETE' then old else new end;
+end $$;
+drop trigger if exists trg_staff_guard on public.staff;
+create trigger trg_staff_guard before update or delete on public.staff
+  for each row execute function public.staff_guard();
+
+alter table public.staff enable row level security;
+drop policy if exists "staff read" on public.staff;
+create policy "staff read" on public.staff for select using (public.is_admin());
+drop policy if exists "staff super write" on public.staff;
+create policy "staff super write" on public.staff for all using (public.is_super()) with check (public.is_super());
+
+-- Hanya super admin yang boleh mengubah harga, konten, dan tampilan
+drop policy if exists "settings admin write" on public.site_settings;
+drop policy if exists "settings super write" on public.site_settings;
+create policy "settings super write" on public.site_settings for all using (public.is_super()) with check (public.is_super());
+
+-- =====================================================================
+--  MENAMBAH SUPER ADMIN PERTAMA pada instalasi baru (cukup sekali):
+--    insert into public.staff(email, role) values ('email@anda.com', 'super');
+--  Staf berikutnya ditambahkan dari admin.html > tab "Staf redaksi".
+-- =====================================================================
