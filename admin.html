@@ -63,6 +63,33 @@
   .kv dt{color:var(--muted)} .kv dd{margin:0;overflow-wrap:anywhere}
   .inline{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
   .inline input{max-width:200px}
+  .admin-layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:28px;align-items:start;margin-top:20px}
+  .admin-main{min-width:0}
+  .side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);display:grid;gap:10px}
+  .side-tabs{flex-direction:column;align-items:stretch;gap:4px;margin:0}
+  .side-tabs .tab{text-align:left;border-radius:10px;border-color:transparent;background:transparent;padding:9px 12px;text-decoration:none;font-size:.92rem}
+  .side-tabs .tab:hover{background:var(--tint)}
+  .side-tabs .tab[aria-selected="true"]{background:var(--cloth);color:var(--cloth-ink)}
+  .tab-group{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--muted);margin:12px 12px 2px}
+  .tab-link{color:var(--cloth)!important}
+  @media (max-width:900px){.admin-layout{grid-template-columns:1fr}.side{position:static}.side-tabs{flex-direction:row;flex-wrap:wrap}.tab-group{width:100%;margin:6px 0 0}}
+  .hub-panel{display:grid;gap:18px}
+  .hub-head{display:flex;flex-wrap:wrap;gap:18px;justify-content:space-between;align-items:flex-start}
+  .setup-score{display:grid;gap:4px;min-width:200px}
+  .setup-score b{font-size:1.8rem}
+  .setup-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:6px 18px}
+  .setup-list li{display:flex;gap:8px;align-items:center;font-size:.88rem;padding:4px 0}
+  .setup-list .dot{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:.7rem;font-weight:800;flex-shrink:0;color:#fff}
+  .setup-list .dot.ok{background:var(--ok)} .setup-list .dot.no{background:var(--warn)}
+  .hub{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+  .hub button{text-align:left;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:12px;padding:14px;font:inherit;cursor:pointer;display:grid;gap:4px;align-content:start}
+  .hub button:hover{border-color:var(--cloth)}
+  .hub button b{font-size:.95rem}
+  .hub button span{font-size:.8rem;color:var(--muted)}
+  .hub button em{font-style:normal;font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--foil)}
+  .jump{display:flex;flex-wrap:wrap;gap:6px;position:sticky;top:0;z-index:4;background:var(--paper);padding:8px 0}
+  .jump button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:5px 12px;font:inherit;font-size:.8rem;cursor:pointer}
+  .flash{outline:3px solid var(--foil);outline-offset:4px;transition:outline-color 1.5s}
   .ed-img{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
   .ed-img .thumb{width:72px;height:72px;border:1px dashed var(--line);border-radius:10px;display:grid;place-items:center;background:var(--paper);overflow:hidden}
   .ed-img .thumb img{max-width:100%;max-height:100%;object-fit:contain}
@@ -94,19 +121,32 @@
   <div id="notConfigured" class="alert err" style="margin-top:30px" hidden>Supabase belum dikonfigurasi. Isi SUPABASE_URL dan SUPABASE_ANON_KEY di js/config.js.</div>
 
   <div id="app" hidden>
-    <div class="tabs" role="tablist" style="margin-top:20px">
-      <button class="tab" role="tab" aria-selected="true" data-p="aRingkas">Ringkasan</button>
-      <button class="tab" role="tab" aria-selected="false" data-p="aNaskah">Naskah masuk</button>
-      <button class="tab" role="tab" aria-selected="false" data-p="aBuku">Katalog buku</button>
-      <button class="tab" role="tab" aria-selected="false" data-p="aCall">Call for chapter</button>
-      <button class="tab super-only" role="tab" aria-selected="false" data-p="aHarga">Harga & paket</button>
-      <button class="tab super-only" role="tab" aria-selected="false" data-p="aKonten">Konten halaman</button>
-      <button class="tab super-only" role="tab" aria-selected="false" data-p="aTampil">Tampilan</button>
-      <button class="tab super-only" role="tab" aria-selected="false" data-p="aStaf">Staf redaksi</button>
-    </div>
-    <p class="note" id="roleLine" style="margin-top:10px"></p>
+    <div class="admin-layout">
+    <aside class="side">
+      <p class="note" id="roleLine"></p>
+      <div class="tabs side-tabs" role="tablist" aria-label="Menu redaksi">
+        <span class="tab-group">Operasional</span>
+        <button class="tab" role="tab" aria-selected="true" data-p="aRingkas">Ringkasan</button>
+        <button class="tab" role="tab" aria-selected="false" data-p="aNaskah">Naskah masuk</button>
+        <button class="tab" role="tab" aria-selected="false" data-p="aBuku">Katalog buku</button>
+        <button class="tab" role="tab" aria-selected="false" data-p="aCall">Call for chapter</button>
+        <span class="tab-group super-only">Pengaturan situs</span>
+        <button class="tab super-only" role="tab" aria-selected="false" data-p="aHarga">Harga & paket</button>
+        <button class="tab super-only" role="tab" aria-selected="false" data-p="aKonten">Konten halaman</button>
+        <button class="tab super-only" role="tab" aria-selected="false" data-p="aTampil">Tampilan</button>
+        <button class="tab super-only" role="tab" aria-selected="false" data-p="aStaf">Staf redaksi</button>
+        <a class="tab tab-link" href="./" target="_blank" rel="noopener">Lihat situs ↗</a>
+      </div>
+    </aside>
+    <div class="admin-main">
 
     <section class="admin-sec" id="aRingkas">
+      <div class="panel super-only hub-panel" id="hubPanel" hidden>
+        <div class="hub-head"><div><span class="eyebrow">Super admin</span><h3>Pusat pengaturan situs</h3><p class="note">Semua isi situs diatur dari sini. Klik kartu untuk langsung ke bagiannya.</p></div>
+          <div class="setup-score"><b class="mono" id="setupPct">0%</b><span class="note">kelengkapan situs</span><div class="meter"><i id="setupBar" style="width:0%"></i></div></div></div>
+        <ul class="setup-list" id="setupList"></ul>
+        <div class="hub" id="hub"></div>
+      </div>
       <div class="kpis" id="kpis"></div>
       <div class="grid g2">
         <div class="panel"><h3 style="margin-bottom:12px">Naskah per tahap</h3><div id="stageBars" class="bars"></div></div>
@@ -174,6 +214,8 @@
       </form>
       <div class="table-wrap"><table><thead><tr><th>Email</th><th>Nama</th><th>Peran</th><th></th></tr></thead><tbody id="staffRows"></tbody></table></div>
     </section>
+    </div>
+    </div>
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
