@@ -124,6 +124,7 @@
         <span class="note">Tahap ${Math.max(idx, 0) + 1} dari ${st.length}${!rejected && st[idx + 1] ? ` · berikutnya: ${esc(st[idx + 1].label)}` : ""}</span></div>
       ${s.status_note ? `<p class="callout"><b>Catatan redaksi:</b> ${esc(s.status_note)}</p>` : ""}
       ${needs ? `<p class="callout warn">Ada tagihan yang menunggu pembayaran Anda.</p>` : ""}
+      ${docRow(s)}
 
       <div class="ms-cols">
         <section>
@@ -151,6 +152,15 @@
         <ol class="timeline">${st.map((x, i) => { const ev = evt(x.id); return `<li class="${!rejected && i < idx ? "done" : i === idx ? "now" : ""}"><div><b>${esc(x.label)}</b><small>${ev ? fmt(ev.created_at) + " · " : ""}${esc(ev && ev.note ? ev.note : x.hint)}</small></div></li>`; }).join("")}</ol>
       </details>
     </article>`;
+  }
+
+  const LOA_OK = ["kontrak", "editing", "layout", "proof", "isbn", "cetak", "terbit"];
+  function docRow(s) {
+    const code = encodeURIComponent(s.tracking_code), loa = LOA_OK.includes(s.status), skt = s.status === "terbit";
+    return `<div class="doc-row"><span class="lbl">Dokumen untuk BKD/PAK</span><div class="btn-row">
+      ${loa ? `<a class="btn btn-ghost btn-sm" href="surat.html?kode=${code}&jenis=loa" target="_blank" rel="noopener">Surat Penerimaan (LoA)</a>` : `<span class="note">LoA tersedia setelah naskah masuk tahap kontrak.</span>`}
+      ${skt ? `<a class="btn btn-ghost btn-sm" href="surat.html?kode=${code}&jenis=skt" target="_blank" rel="noopener">Surat Keterangan Terbit</a>` : ""}
+    </div></div>`;
   }
 
   function payRow(p) {

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Verifikasi Dokumen</title>
+<meta name="description" content="Periksa keaslian surat penerimaan naskah dan surat keterangan terbit.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .vf{padding-block:clamp(32px,6vw,72px);display:grid;gap:22px;max-width:760px}
+  .vf h1{font-size:clamp(2rem,4.4vw,3rem)}
+  .vcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:clamp(18px,3vw,28px);display:grid;gap:16px}
+  .vhead{display:flex;gap:14px;align-items:center}
+  .vseal{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;flex-shrink:0;color:#fff;font-size:1.6rem;font-weight:800}
+  .vseal.ok{background:var(--ok)} .vseal.bad{background:var(--bad)}
+  .vhead h2{font-size:1.5rem}
+  .vdocs{display:grid;gap:8px;list-style:none;margin:0;padding:0}
+  .vdocs li{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <nav class="wrap nav" aria-label="Menu verifikasi">
+    <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"></span><span><b data-b="name">IGV Press</b><small data-b="company">PT. Inovasi Global Ventures</small></span></a>
+    <a class="btn btn-ghost btn-sm" href="index.html">Kembali ke situs</a>
+  </nav>
+</header>
+
+<main class="wrap vf">
+  <div class="sec-head" style="margin:0">
+    <span class="eyebrow">Verifikasi dokumen</span>
+    <h1>Cek keaslian surat dari penerbit.</h1>
+    <p class="lead">Untuk asesor PAK, tim BKD, dan pengelola jurnal: masukkan kode naskah yang tercetak di surat, atau pindai kode QR pada surat.</p>
+  </div>
+  <form class="track-form" id="vForm">
+    <input id="vCode" placeholder="IGV-26-XXXXXX" aria-label="Kode naskah" autocomplete="off" required>
+    <button class="btn btn-primary" type="submit">Periksa</button>
+  </form>
+  <p class="note" id="vDemo" hidden>Mode demo: coba kode <span class="mono">IGV-DEMO</span>.</p>
+  <div id="vResult" aria-live="polite"></div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap"><div class="foot-base" style="margin:0;border:0;padding:0"><span>© <span class="yr">2026</span> <span data-b="company">PT. Inovasi Global Ventures</span></span><span data-b="address"></span></div></div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/doc.js"></script>
+</body>
+</html>

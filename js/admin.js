@@ -14,7 +14,12 @@
     const { data: { session } } = await sb.auth.getSession();
     if (!session) { $("#loginForm").hidden = false; $("#app").hidden = true; $("#logout").hidden = true; return; }
     const { data: role, error: rErr } = await sb.rpc("my_role");
-    if (rErr) console.error(rErr);
+    if (rErr) {
+      console.error(rErr);
+      $("#loginForm").hidden = false; $("#app").hidden = true;
+      $("#lMsg").innerHTML = `<div class="alert err">Database belum diperbarui ke versi terbaru (${esc(rErr.message)}). Jalankan ulang seluruh isi <b>supabase/schema.sql</b> di Supabase → SQL Editor, lalu muat ulang halaman ini.</div>`;
+      return;
+    }
     if (!role) {
       $("#loginForm").hidden = false; $("#app").hidden = true;
       $("#lMsg").innerHTML = `<div class="alert err">${esc(session.user.email || "Akun ini")} belum terdaftar sebagai staf redaksi. Minta super admin menambahkan email ini di menu Staf redaksi.</div>`;
@@ -53,9 +58,19 @@
   });
   $("#logout").addEventListener("click", async () => { await sb.auth.signOut(); boot(); });
 
-  $$(".tab").forEach((t) => t.addEventListener("click", () => {
-    $$(".tab").forEach((x) => { x.setAttribute("aria-selected", x === t); $("#" + x.dataset.p).hidden = x !== t; });
-  }));
+  const TABS = () => $$(".tab[data-p]");
+  function goTab(pid) {
+    TABS().forEach((x) => { x.setAttribute("aria-selected", x.dataset.p === pid); $("#" + x.dataset.p).hidden = x.dataset.p !== pid; });
+  }
+  TABS().forEach((t) => t.addEventListener("click", () => { goTab(t.dataset.p); window.scrollTo({ top: 0 }); }));
+  function jumpTo(pid, label) {
+    goTab(pid);
+    if (!label) { window.scrollTo({ top: 0, behavior: "smooth" }); return; }
+    const sec = $("#" + pid);
+    const hit = Array.from(sec.querySelectorAll("legend, .ed-list-head b, h3")).find((el) => el.textContent.trim().toLowerCase().startsWith(label.toLowerCase()));
+    const box = hit ? (hit.closest("fieldset, .ed-list, .panel") || hit) : null;
+    if (box) { box.scrollIntoView({ behavior: "smooth", block: "start" }); box.classList.add("flash"); setTimeout(() => box.classList.remove("flash"), 1600); }
+  }
 
   /* Naskah */
   let subs = [], pays = [], detailId = null, flash = "";
@@ -102,7 +117,7 @@
   }
   $("#todo").addEventListener("click", (e) => {
     const b = e.target.closest("[data-open]"); if (!b) return;
-    $$(".tab").find((t) => t.dataset.p === "aNaskah").click(); openDetail(b.dataset.open, true);
+    goTab("aNaskah"); openDetail(b.dataset.open, true);
   });
 
   function renderSubs() {
@@ -175,6 +190,15 @@
           : `<p class="note">Belum ada jadwal tagihan. Jadwal dibuat dari nilai kontrak dengan pembagian: ${stages.map((x) => `${esc(x.label)} ${x.percent}%`).join(", ") || "belum diatur (lihat Harga & paket > Cicilan)"}.</p>
              <button class="btn btn-primary btn-sm" type="button" id="dMakeSched">Buat jadwal tagihan</button>`}
           <span class="note" id="dPayMsg" aria-live="polite">${esc(flash)}</span>
+          <h4 style="margin-top:8px">Dokumen BKD/PAK</h4>
+          <div class="field"><label for="dAuthors">Nama penulis di surat (pisahkan dengan titik koma)</label><input id="dAuthors" value="${esc(s.doc_authors || s.full_name)}"></div>
+          <div class="two"><div class="field"><label for="dIsbn">ISBN</label><input id="dIsbn" value="${esc(s.isbn || "")}" placeholder="978-634-…"></div>
+            <div class="field"><label for="dPub">Tanggal terbit</label><input id="dPub" type="date" value="${esc(s.published_at || "")}"></div></div>
+          <div class="inline"><button class="btn btn-ghost btn-sm" type="button" id="dDocSave">Simpan data surat</button>
+            <a class="btn btn-ghost btn-sm" href="surat.html?kode=${encodeURIComponent(s.tracking_code)}&jenis=loa" target="_blank" rel="noopener">Lihat LoA</a>
+            <a class="btn btn-ghost btn-sm" href="surat.html?kode=${encodeURIComponent(s.tracking_code)}&jenis=skt" target="_blank" rel="noopener">Lihat SKT</a>
+            <a class="btn btn-ghost btn-sm" href="verifikasi.html?kode=${encodeURIComponent(s.tracking_code)}" target="_blank" rel="noopener">Halaman verifikasi</a></div>
+          <p class="note">LoA berlaku sejak status "Kontrak & pembayaran". Surat Keterangan Terbit berlaku saat status "Terbit"; isi ISBN dan tanggal terbit lebih dulu.</p>
         </section>
       </div>`;
     flash = "";
@@ -185,6 +209,12 @@
     const s = subs.find((x) => x.id === detailId); if (!s) return;
     const msg = $("#dPayMsg"); const say = (t) => { flash = t; msg.textContent = t; };
     if (e.target.closest("#dClose")) { $("#sDetail").hidden = true; detailId = null; return; }
+    if (e.target.closest("#dDocSave")) {
+      const isbn = $("#dIsbn").value.trim();
+      if (isbn && !/^97[89][-\d ]{10,16}$/.test(isbn)) { say("Format ISBN tidak dikenali. Contoh: 978-634-1234-56-7."); return; }
+      const { error } = await sb.from("submissions").update({ doc_authors: $("#dAuthors").value.trim() || null, isbn: isbn || null, published_at: $("#dPub").value || null }).eq("id", s.id);
+      say(error ? "Gagal: " + error.message : "Data surat tersimpan."); if (!error) loadSubs(); return;
+    }
     if (e.target.closest("#dPriceSave")) {
       const { error } = await sb.from("submissions").update({ agreed_price: +$("#dPrice").value || null }).eq("id", s.id);
       say(error ? "Gagal: " + error.message : "Nilai kontrak tersimpan."); if (!error) loadSubs(); return;
@@ -311,7 +341,7 @@
         ["includes", { t: "addons", label: "Layanan tambahan yang sudah termasuk paket" }]] } }],
       ["chapter", { t: "obj", label: "Book chapter", fields: [["price", M("Harga per penulis")], ["features", L("Fasilitas")]] }],
       ["addons", { t: "list", label: "Layanan tambahan", item: "name", onChange: () => addonFields.forEach((f) => f()), of: { t: "obj", fields: [
-        ["name", T("Nama layanan")], ["id", T("Kode", "Huruf kecil tanpa spasi.")], ["price", M("Harga")],
+        ["name", T("Nama layanan")], ["id", T("Kode", "Huruf kecil tanpa spasi.")], ["price", { t: "money", label: "Harga (hanya terlihat oleh staf, tidak tampil di situs)" }],
         ["unit", { t: "select", label: "Satuan", opts: [["flat", "Per judul"], ["page", "Per halaman"], ["item", "Per item"]] }]] } }],
       ["print", { t: "obj", label: "Tarif cetak (dipakai kalkulator)", fields: [
         ["base", M("Biaya dasar per eksemplar")], ["perPageBW", M("Per halaman hitam-putih")], ["perPageColor", M("Per halaman berwarna")],
@@ -339,16 +369,28 @@
       ["sections", { t: "obj", label: "Judul bagian lain", fields: [
         ["harga", head("Paket & harga")], ["studio", head("Studio Penulis")], ["katalog", head("Katalog")], ["call", head("Call for chapter")],
         ["lacak", head("Lacak naskah")], ["kirim", head("Kirim naskah")], ["faq", head("Tanya jawab")]] }],
+      ["legal", { t: "obj", label: "Legalitas perusahaan", fields: [
+        ["items", { t: "list", label: "Data legalitas (baris dengan nilai kosong tidak ditampilkan; bagian tampil bila minimal 2 baris terisi)", item: "label", of: { t: "obj", fields: [
+          ["label", T("Nama data", "Contoh: Nomor Induk Berusaha (NIB)")], ["value", T("Nilai", "Contoh: 1234567890123. KBLI penerbitan buku: 58110 – Penerbitan Buku.")],
+          ["link", T("Tautan cek keabsahan (opsional)", "Misalnya halaman OSS, AHU Kemenkumham, atau direktori IKAPI.")]] } }],
+        ["note", A("Catatan di bawah daftar legalitas")]] }],
       ["privacyNote", A("Catatan privasi di formulir kirim naskah")],
       ["payment", { t: "obj", label: "Rekening pembayaran (tampil di Portal Penulis)", fields: [["bank", T("Nama bank")], ["account", T("Nomor rekening")], ["holder", T("Atas nama")], ["note", A("Petunjuk pembayaran")]] }],
       ["portal", { t: "obj", label: "Portal Penulis", fields: [["title", T("Judul")], ["lead", A("Paragraf pembuka")]] }],
+      ["letters", { t: "obj", label: "Surat otomatis (LoA & Surat Keterangan Terbit)", fields: [
+        ["city", T("Kota penandatanganan")], ["signerName", T("Nama penanda tangan")], ["signerTitle", T("Jabatan")],
+        ["signatureUrl", { t: "image", label: "Tanda tangan (PNG transparan)", hint: "Opsional. Pindai tanda tangan di kertas putih, hapus latar belakangnya." }],
+        ["stampUrl", { t: "image", label: "Stempel perusahaan (PNG transparan)", hint: "Opsional. Ditumpuk di atas tanda tangan." }],
+        ["loaTitle", T("Judul LoA")], ["loaIntro", A("LoA — paragraf sebelum data naskah")], ["loaAfter", A("LoA — paragraf setelah data naskah")],
+        ["sktTitle", T("Judul Surat Keterangan Terbit")], ["sktIntro", A("SKT — paragraf sebelum data buku")], ["sktAfter", A("SKT — paragraf setelah data buku")],
+        ["closing", A("Kalimat penutup (kedua surat)")]] }],
       ["faq", { t: "list", label: "Tanya jawab (FAQ)", item: "q", of: { t: "obj", fields: [["q", T("Pertanyaan")], ["a", A("Jawaban")]] } }],
       ["credit", { t: "list", label: "Simulasi angka kredit", item: "label", of: { t: "obj", fields: [["label", T("Jenis karya")], ["id", T("Kode")], ["max", N("Angka kredit maksimum")]] } }],
       ["readiness", { t: "list", label: "Cek kesiapan naskah", item: "text", of: { t: "obj", fields: [["text", A("Syarat")], ["id", T("Kode")], ["w", N("Bobot", "Skor dihitung sebagai persentase dari total bobot.")]] } }]
     ] }
   };
 
-  const SECNAME = { profil: "Profil", layanan: "Layanan", harga: "Harga", studio: "Studio Penulis", katalog: "Katalog", call: "Call for Chapter", lacak: "Lacak Naskah", kirim: "Kirim Naskah", faq: "FAQ" };
+  const SECNAME = { profil: "Profil", layanan: "Layanan", harga: "Harga", studio: "Studio Penulis", katalog: "Katalog", call: "Call for Chapter", lacak: "Lacak Naskah", kirim: "Kirim Naskah", legalitas: "Legalitas", faq: "FAQ" };
   SCHEMA.tampil = { t: "obj", fields: [
     ["brand", { t: "obj", label: "Logo & ikon", fields: [
       ["logoUrl", { t: "image", label: "Logo (PNG transparan disarankan, tinggi ±80 px)", hint: "Menggantikan ikon buku di menu atas, portal, dan admin." }],
@@ -512,6 +554,13 @@
       L.sections = known;
     }
     SCHEMA[key].fields.forEach(([k, f]) => root.appendChild(build(f, v, k)));
+    const names = Array.from(root.querySelectorAll(":scope > fieldset > legend, :scope > .ed-list > .ed-list-head > b")).map((x) => x.textContent);
+    if (names.length > 2) {
+      const bar = node(`<div class="jump"><span class="note">Lompat ke:</span>${names.map((n) => `<button type="button">${esc(n.split(" (")[0])}</button>`).join("")}</div>`);
+      bar.addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) jumpTo(root.closest(".admin-sec").id, b.textContent); });
+      root.prepend(bar);
+    }
+    if (ROLE === "super") renderSetup();
   }
 
   function validate(key) {
@@ -537,10 +586,18 @@
     return null;
   }
 
+  let PRIV = {};
   async function loadSettings() {
     const { data, error } = await sb.from("site_settings").select("key,value");
     if (error) console.error(error);
-    (data || []).forEach((r) => { if (ED[r.key]) ED[r.key] = D.merge(clone(r.key === "pricing" ? D.pricing : D.content), r.value); });
+    let priv = {};
+    (data || []).forEach((r) => {
+      if (r.key === "private") priv = r.value || {};
+      else if (ED[r.key]) ED[r.key] = D.merge(clone(r.key === "pricing" ? D.pricing : D.content), r.value);
+    });
+    PRIV = priv;
+    const prices = priv.addonPrices || {};
+    (ED.pricing.addons || []).forEach((a) => { a.price = prices[a.id] != null ? +prices[a.id] : (a.price || 0); });
     renderEditor("pricing"); renderEditor("content"); renderEditor("tampil");
     D.applyLook(ED.content);
   }
@@ -550,9 +607,19 @@
     if (bad) { msg.innerHTML = `<span style="color:var(--bad)">${esc(bad)}</span>`; return; }
     b.disabled = true; msg.textContent = "Menyimpan…";
     const { data: { user } } = await sb.auth.getUser();
-    const { error } = await sb.from("site_settings").upsert({ key, value: ED[key], updated_at: new Date().toISOString(), updated_by: user ? user.id : null });
+    const stamp = { updated_at: new Date().toISOString(), updated_by: user ? user.id : null };
+    let value = ED[key], error = null;
+    if (key === "pricing") {
+      value = clone(ED.pricing);
+      const addonPrices = {};
+      value.addons = (value.addons || []).map((a) => { addonPrices[a.id] = +a.price || 0; const r = { ...a }; delete r.price; return r; });
+      const pr = await sb.from("site_settings").upsert({ key: "private", value: { ...PRIV, addonPrices }, ...stamp });
+      error = pr.error; if (!error) PRIV = { ...PRIV, addonPrices };
+    }
+    if (!error) ({ error } = await sb.from("site_settings").upsert({ key, value, ...stamp }));
     b.disabled = false;
     if (!error && name === "tampil") D.applyLook(ED.content);
+    if (!error && ROLE === "super") renderSetup();
     msg.innerHTML = error ? `<span style="color:var(--bad)">Gagal menyimpan: ${esc(error.message)}</span>` : `<span style="color:var(--ok)">Tersimpan ${new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}. Situs langsung memakai versi ini.</span>`;
   }));
   $$("[data-reset]").forEach((b) => b.addEventListener("click", () => {
@@ -566,6 +633,48 @@
     renderEditor(key);
     $("#msg-" + key).textContent = "Nilai bawaan dimuat. Tekan Simpan untuk menerapkannya di situs.";
   }));
+
+  /* =============== PUSAT PENGATURAN (super admin) =============== */
+  const HUB = [
+    ["Identitas & kontak", "Nama penerbit, WhatsApp, email, alamat, IKAPI, awalan ISBN", "aKonten", "Identitas & kontak"],
+    ["Beranda", "Judul besar, paragraf pembuka, poin keunggulan", "aKonten", "Beranda"],
+    ["Profil, visi & misi", "Paragraf profil perusahaan, visi, misi", "aKonten", "Profil"],
+    ["Keunggulan & layanan", "Kartu keunggulan, daftar layanan, alur terbit", "aKonten", "Mengapa memilih kami"],
+    ["Tanya jawab (FAQ)", "Pertanyaan dan jawaban di halaman depan", "aKonten", "Tanya jawab"],
+    ["Paket & harga", "Paket, harga, eksemplar, fasilitas", "aHarga", "Paket penerbitan"],
+    ["Harga layanan tambahan", "HKI, DOI, similarity, dll. Hanya terlihat oleh staf", "aHarga", "Layanan tambahan"],
+    ["Cicilan & tarif cetak", "Tahap pembayaran dan biaya cetak", "aHarga", "Cicilan"],
+    ["Rekening pembayaran", "Bank dan nomor rekening di Portal Penulis", "aKonten", "Rekening pembayaran"],
+    ["Legalitas perusahaan", "NIB, SK Kemenkumham, NPWP, KBLI, IKAPI", "aKonten", "Legalitas perusahaan"],
+    ["Surat LoA & SKT", "Penanda tangan, tanda tangan, stempel, isi surat", "aKonten", "Surat otomatis"],
+    ["Logo & favicon", "Logo di menu dan kop surat", "aTampil", "Logo & ikon"],
+    ["Warna & huruf", "Warna tema dan jenis huruf", "aTampil", "Warna & huruf"],
+    ["Menu & urutan bagian", "Nama menu, urutan, tampil/sembunyi", "aTampil", "Menu & bagian"],
+    ["Staf redaksi", "Tambah editor atau super admin", "aStaf", ""],
+    ["Katalog buku", "Buku terbit dan sampulnya", "aBuku", ""],
+    ["Call for chapter", "Buka atau tutup tema bunga rampai", "aCall", ""]
+  ];
+  function renderSetup() {
+    const c = ED.content || {}, b = c.brand || {}, pay = c.payment || {}, L = c.letters || {};
+    const checks = [
+      ["Nomor WhatsApp asli", b.whatsapp && b.whatsapp !== "6281200000000", "aKonten", "Identitas & kontak"],
+      ["Email redaksi", b.email && b.email !== "redaksi@igvpress.id", "aKonten", "Identitas & kontak"],
+      ["Nomor anggota IKAPI", !!b.ikapi, "aKonten", "Identitas & kontak"],
+      ["Awalan ISBN dari Perpusnas", b.isbnPrefix && !/X/.test(b.isbnPrefix), "aKonten", "Identitas & kontak"],
+      ["Logo diunggah", !!b.logoUrl, "aTampil", "Logo & ikon"],
+      ["Data legalitas (NIB, SK, KBLI)", ((c.legal || {}).items || []).filter((x) => x && String(x.value || "").trim()).length >= 3, "aKonten", "Legalitas perusahaan"],
+      ["Rekening pembayaran asli", pay.account && pay.account !== "000-00-0000000-0", "aKonten", "Rekening pembayaran"],
+      ["Penanda tangan surat", L.signerName && !/^Nama Direktur/.test(L.signerName), "aKonten", "Surat otomatis"],
+      ["Tanda tangan / stempel surat", !!(L.signatureUrl || L.stampUrl), "aKonten", "Surat otomatis"],
+      ["Harga semua layanan tambahan", (ED.pricing.addons || []).length > 0 && (ED.pricing.addons || []).every((a) => +a.price > 0), "aHarga", "Layanan tambahan"]
+    ];
+    const done = checks.filter((x) => x[1]).length, pct = Math.round(done / checks.length * 100);
+    $("#setupPct").textContent = pct + "%"; $("#setupBar").style.width = pct + "%";
+    $("#setupList").innerHTML = checks.map(([t, ok, tab, lg]) => `<li><span class="dot ${ok ? "ok" : "no"}">${ok ? "✓" : "!"}</span><span>${esc(t)}</span>${ok ? "" : ` <button class="linkish" type="button" data-tab="${tab}" data-lg="${esc(lg)}">Isi</button>`}</li>`).join("");
+    $("#hub").innerHTML = HUB.map(([t, d, tab, lg]) => `<button type="button" data-tab="${tab}" data-lg="${esc(lg)}"><em>${{ aKonten: "Konten", aHarga: "Harga", aTampil: "Tampilan", aStaf: "Staf", aBuku: "Katalog", aCall: "Call" }[tab]}</em><b>${esc(t)}</b><span>${esc(d)}</span></button>`).join("");
+    $("#hubPanel").hidden = false;
+  }
+  $("#hubPanel").addEventListener("click", (e) => { const b = e.target.closest("[data-tab]"); if (b) jumpTo(b.dataset.tab, b.dataset.lg); });
 
   /* =============== STAF REDAKSI (super admin) =============== */
   let staff = [];

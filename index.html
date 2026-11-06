@@ -103,7 +103,7 @@
       <article class="plan" id="chapterPlan"></article>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Layanan tambahan</th><th style="text-align:right">Harga</th></tr></thead>
+          <thead><tr><th>Layanan tambahan</th><th>Ketersediaan</th></tr></thead>
           <tbody id="addonTable"></tbody>
         </table>
       </div>
@@ -240,7 +240,7 @@
       <div class="field"><label for="fTitle">Judul naskah</label><input id="fTitle" name="book_title" required maxlength="250"></div>
       <div class="two">
         <div class="field"><label for="fType">Jenis buku</label>
-          <select id="fType" name="book_type"><option>Buku ajar</option><option>Buku referensi</option><option>Monograf</option><option>Book chapter</option><option>Konversi tesis/disertasi</option><option>Modul/panduan praktikum</option><option>Lainnya</option></select></div>
+          <select id="fType" name="book_type"><optgroup label="Akademik"><option>Buku ajar</option><option>Buku referensi</option><option>Monograf</option><option>Book chapter</option><option>Konversi tesis/disertasi</option><option>Buku panduan (untuk umum)</option></optgroup><optgroup label="Umum"><option>Novel / fiksi</option><option>Nonfiksi populer</option><option>Buku anak</option><option>Buku saku PkM (untuk umum)</option></optgroup><option>Lainnya</option></select></div>
         <div class="field"><label for="fPkg">Paket</label><select id="fPkg" name="package"></select></div>
       </div>
       <div class="two">
@@ -256,6 +256,15 @@
 </section>
 
 <!-- FAQ -->
+<!-- LEGALITAS -->
+<section class="band" id="legalitas" hidden>
+  <div class="wrap">
+    <div class="sec-head" data-sec="legalitas"></div>
+    <div class="legal-grid" id="legalGrid"></div>
+    <p class="note" id="legalNote" style="margin-top:14px"></p>
+  </div>
+</section>
+
 <section class="band alt" id="faq">
   <div class="wrap">
     <div class="sec-head" data-sec="faq"></div>
@@ -271,6 +280,7 @@
         <a class="brand" href="#beranda" style="color:inherit"><span class="brand-mark" aria-hidden="true"></span><span><b data-b="name"></b><small data-b="company" style="color:inherit;opacity:.7"></small></span></a>
         <p style="margin-top:12px" data-b="tagline"></p>
         <p id="ikapiLine" hidden></p>
+        <p id="legalLine" class="note" style="color:inherit;opacity:.8" hidden></p>
       </div>
       <div>
         <h4>Kontak</h4>

@@ -8,6 +8,8 @@ Situs statis (HTML/CSS/JS murni, tanpa proses build) dengan database **Supabase*
 |---|---|
 | `index.html` | Halaman utama: Profil, Layanan, Harga, Studio Penulis, Katalog, Call for Chapter, Lacak Naskah, Kirim Naskah, FAQ |
 | `penulis.html` | **Portal Penulis**: masuk via email tanpa kata sandi, pantau naskah, bayar tagihan bertahap, unggah naskah & revisi |
+| `surat.html` | Surat otomatis: **LoA** (Surat Penerimaan Naskah) dan **Surat Keterangan Terbit**, siap cetak A4/PDF dengan QR verifikasi |
+| `verifikasi.html` | Halaman publik untuk asesor PAK/BKD memeriksa keaslian surat |
 | `admin.html` | Dasbor redaksi (login): status naskah, katalog, call for chapter, **harga & paket**, dan **seluruh teks halaman** |
 | `js/config.js` | **Satu-satunya file yang wajib diubah**: kunci Supabase (identitas di sini hanya nilai awal) |
 | `js/data.js` | Nilai **bawaan** harga dan konten; dipakai sampai admin menyimpan versi sendiri |
@@ -60,6 +62,12 @@ Panduan lengkap langkah demi langkah ada di dokumen "Panduan Pemasangan IGV Pres
 
 ### 4. Domain sendiri (opsional)
 Subdomain `*.pages.dev` gratis selamanya. Domain sendiri (`igvpress.id`, `.co.id`, `.com`) tetap harus dibeli di registrar (±Rp150–350 ribu/tahun), lalu hubungkan di **Pages → Custom domains**. SSL dari Cloudflare gratis.
+
+## Surat otomatis untuk BKD/PAK
+- **LoA** tersedia di Portal Penulis begitu status naskah mencapai "Kontrak & pembayaran".
+- **Surat Keterangan Terbit** tersedia saat status "Terbit"; isi ISBN dan tanggal terbit di admin → Naskah → Detail → Dokumen BKD/PAK.
+- Kop surat memakai logo & identitas dari admin; penanda tangan, jabatan, tanda tangan, stempel, dan isi surat diatur di **Konten halaman → Surat otomatis**.
+- Setiap surat memuat nomor (mis. `LoA/IGV-26-A1B2C3/XI/2026`) dan QR ke `verifikasi.html?kode=…`. Bila naskah dibatalkan, halaman verifikasi otomatis menyatakan LoA "Tidak berlaku".
 
 ## Peran redaksi
 | Peran | Bisa mengakses |

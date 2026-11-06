@@ -84,7 +84,7 @@
         <div class="field"><label for="nTitle">Judul naskah</label><input id="nTitle" name="book_title" required maxlength="250"></div>
         <div class="two">
           <div class="field"><label for="nType">Jenis buku</label>
-            <select id="nType" name="book_type"><option>Buku ajar</option><option>Buku referensi</option><option>Monograf</option><option>Book chapter</option><option>Konversi tesis/disertasi</option><option>Modul/panduan praktikum</option><option>Lainnya</option></select></div>
+            <select id="nType" name="book_type"><optgroup label="Akademik"><option>Buku ajar</option><option>Buku referensi</option><option>Monograf</option><option>Book chapter</option><option>Konversi tesis/disertasi</option><option>Buku panduan (untuk umum)</option></optgroup><optgroup label="Umum"><option>Novel / fiksi</option><option>Nonfiksi populer</option><option>Buku anak</option><option>Buku saku PkM (untuk umum)</option></optgroup><option>Lainnya</option></select></div>
           <div class="field"><label for="nPkg">Paket</label><select id="nPkg" name="package"></select></div>
         </div>
         <div class="field"><label for="nFile">File naskah (.docx, .doc, .pdf, .zip — maks 50 MB)</label><input id="nFile" type="file" accept=".doc,.docx,.pdf,.zip,.rar" required></div>

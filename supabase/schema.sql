@@ -460,3 +460,62 @@ create policy "settings super write" on public.site_settings for all using (publ
 --    insert into public.staff(email, role) values ('email@anda.com', 'super');
 --  Staf berikutnya ditambahkan dari admin.html > tab "Staf redaksi".
 -- =====================================================================
+
+
+-- =====================================================================
+--  TAHAP 4 — Surat otomatis (LoA & Surat Keterangan Terbit) + verifikasi
+--  Aman dijalankan ulang.
+-- =====================================================================
+
+alter table public.submissions add column if not exists isbn text;
+alter table public.submissions add column if not exists published_at date;
+alter table public.submissions add column if not exists doc_authors text;   -- nama penulis di surat (boleh lebih dari satu)
+
+-- Data publik untuk surat & halaman verifikasi. Hanya keluar bila kode lacak cocok,
+-- dan TIDAK memuat email, WhatsApp, atau berkas.
+create or replace function public.verify_document(p_code text)
+returns jsonb language sql stable security definer set search_path = public as $$
+  select jsonb_build_object(
+    'code', s.tracking_code,
+    'title', s.book_title,
+    'authors', coalesce(nullif(s.doc_authors, ''), s.full_name),
+    'institution', s.institution,
+    'book_type', s.book_type,
+    'status', s.status,
+    'submitted_at', s.created_at,
+    'accepted_at', (select min(e.created_at) from public.submission_events e
+                    where e.submission_id = s.id and e.status in ('kontrak','editing','layout','proof','isbn','cetak','terbit')),
+    'published_at', s.published_at,
+    'isbn', s.isbn,
+    'loa_valid', s.status in ('kontrak','editing','layout','proof','isbn','cetak','terbit'),
+    'skt_valid', s.status = 'terbit')
+  from public.submissions s
+  where s.tracking_code = upper(trim(p_code))
+  limit 1;
+$$;
+revoke all on function public.verify_document(text) from public;
+grant execute on function public.verify_document(text) to anon, authenticated;
+
+
+-- =====================================================================
+--  TAHAP 5 — Harga layanan tambahan hanya untuk pengelola
+--  Harga add-on disimpan di baris 'private' yang hanya bisa dibaca staf.
+--  Publik hanya melihat nama layanan dan paket yang sudah mencakupnya.
+-- =====================================================================
+alter table public.site_settings drop constraint if exists site_settings_key_check;
+alter table public.site_settings add constraint site_settings_key_check check (key in ('pricing', 'content', 'private'));
+
+drop policy if exists "settings public read" on public.site_settings;
+create policy "settings public read" on public.site_settings for select using (key <> 'private' or public.is_admin());
+
+-- Pindahkan harga add-on yang sudah tersimpan ke baris privat, lalu hapus dari data publik
+insert into public.site_settings(key, value)
+select 'private', jsonb_build_object('addonPrices', coalesce(
+  (select jsonb_object_agg(a->>'id', a->'price') from jsonb_array_elements(s.value->'addons') a where a ? 'price'), '{}'::jsonb))
+from public.site_settings s
+where s.key = 'pricing' and jsonb_typeof(s.value->'addons') = 'array'
+on conflict (key) do nothing;
+
+update public.site_settings
+set value = jsonb_set(value, '{addons}', coalesce((select jsonb_agg(a - 'price') from jsonb_array_elements(value->'addons') a), '[]'::jsonb))
+where key = 'pricing' and jsonb_typeof(value->'addons') = 'array';

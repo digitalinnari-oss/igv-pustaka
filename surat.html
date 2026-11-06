@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Surat Penerbit</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  /* Lembar surat selalu putih-hitam agar sama di layar dan saat dicetak */
+  .letter-wrap{padding-block:24px 64px;display:grid;gap:16px;justify-items:center}
+  .letter-bar{width:min(210mm,100%);display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center}
+  .sheet{--ink-l:#14201D;--muted-l:#55605C;--rule:#14201D;
+    width:min(210mm,100%);min-height:297mm;background:#fff;color:var(--ink-l);padding:16mm 18mm 18mm;
+    box-shadow:0 20px 40px -24px rgba(0,0,0,.45);border-radius:4px;overflow:hidden;font-family:var(--f-body);font-size:11.5pt;line-height:1.55;position:relative}
+  @media (max-width:640px){.sheet{padding:18px;min-height:auto;font-size:10.5pt}}
+  .lh{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;padding-bottom:12px;border-bottom:3px double var(--rule)}
+  .lh-mark{width:58px;height:58px;display:grid;place-items:center}
+  .lh-mark img{max-width:100%;max-height:100%;object-fit:contain}
+  .lh-mark .brand-mark{width:44px;height:54px}
+  .lh h1{font-family:var(--f-display);font-size:20pt;line-height:1.1;margin:0;color:var(--ink-l)}
+  .lh p{margin:2px 0 0;font-size:9pt;color:var(--muted-l)}
+  .ltitle{text-align:center;margin:22px 0 4px}
+  .ltitle h2{font-family:var(--f-body);font-weight:700;font-size:13pt;letter-spacing:.06em;text-transform:uppercase;text-decoration:underline;text-underline-offset:4px;margin:0;color:var(--ink-l)}
+  .ltitle p{margin:4px 0 0;font-size:10pt}
+  .lbody{display:grid;gap:10px;margin-top:18px}
+  .lbody p{margin:0;text-align:justify}
+  .ltable{border-collapse:collapse;margin:4px 0 4px 18px;width:calc(100% - 18px)}
+  .ltable td{padding:3px 6px;border:0;vertical-align:top;font-size:11pt;color:var(--ink-l)}
+  .ltable td:first-child{width:150px;white-space:nowrap}
+  .ltable td:nth-child(2){width:10px}
+  .lfoot{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:end;margin-top:28px}
+  .sign{text-align:left;min-width:230px;position:relative}
+  .sign .space{height:78px;position:relative}
+  .sign .space img{position:absolute;bottom:0;left:0;max-height:78px;max-width:180px}
+  .sign .space img.stamp{left:60px;max-height:92px;opacity:.85}
+  .sign b{display:inline-block;border-bottom:1px solid var(--ink-l);padding-bottom:1px}
+  .qr{display:grid;gap:6px;justify-items:start;font-size:8pt;color:var(--muted-l);max-width:200px}
+  .qr .code{width:92px;height:92px}
+  .qr .code img,.qr .code canvas{width:92px!important;height:92px!important}
+  .void{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+  .void span{transform:rotate(-24deg);font-size:54pt;font-weight:800;color:rgba(180,35,24,.16);border:6px solid rgba(180,35,24,.16);padding:4px 24px;letter-spacing:.08em}
+  #sheetHost{width:100%;display:grid;justify-items:center}
+  .qr span{overflow-wrap:anywhere}
+  @media (max-width:640px){
+    .lfoot{grid-template-columns:1fr}
+    .sign{min-width:0}
+    .ltable{margin-left:0;width:100%}
+    .ltable td:first-child{width:auto;white-space:normal}
+    .lh h1{font-size:16pt}
+  }
+  @page{size:A4;margin:0}
+  @media print{
+    body{background:#fff}
+    .site-header,.letter-bar,.no-print,.site-footer{display:none!important}
+    .letter-wrap{padding:0}
+    .sheet{box-shadow:none;border-radius:0;width:210mm;min-height:297mm}
+    body::before{display:none}
+  }
+</style>
+</head>
+<body>
+<header class="site-header no-print">
+  <nav class="wrap nav" aria-label="Menu surat">
+    <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"></span><span><b data-b="name">IGV Press</b><small data-b="company">PT. Inovasi Global Ventures</small></span></a>
+    <a class="btn btn-ghost btn-sm" href="penulis.html">Portal Penulis</a>
+  </nav>
+</header>
+
+<main class="wrap letter-wrap">
+  <div class="letter-bar">
+    <div class="seg" id="kindSeg"><button type="button" data-v="loa" aria-pressed="true">Surat Penerimaan (LoA)</button><button type="button" data-v="skt" aria-pressed="false">Surat Keterangan Terbit</button></div>
+    <div class="btn-row"><a class="btn btn-ghost btn-sm" id="verifyLink" href="verifikasi.html">Cek keaslian</a><button class="btn btn-primary btn-sm" type="button" id="printBtn">Cetak / Simpan PDF</button></div>
+  </div>
+  <p class="note no-print" id="demoNote" hidden>Mode demo: contoh surat dengan data fiktif.</p>
+  <div id="sheetHost"><p class="note">Memuat surat…</p></div>
+  <p class="note no-print" style="max-width:210mm">Tip: pada jendela cetak, pilih <b>Simpan sebagai PDF</b>, ukuran kertas <b>A4</b>, dan matikan <b>Header and footers</b>.</p>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/doc.js"></script>
+</body>
+</html>

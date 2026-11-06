@@ -65,14 +65,16 @@ window.IGV_DATA = {
         "Cocok untuk BKD semester berjalan"
       ]
     },
+    /* Harga layanan tambahan TIDAK disimpan di sini (file ini publik).
+       Super admin mengisinya di admin.html > Harga & paket; tersimpan privat di database. */
     addons: [
-      { id: "hki",        name: "Pendaftaran HKI (hak cipta)",          price: 450000, unit: "flat" },
-      { id: "similarity", name: "Cek similarity + laporan",             price: 75000,  unit: "flat" },
-      { id: "doi",        name: "DOI buku",                             price: 150000, unit: "flat" },
-      { id: "heavyedit",  name: "Editing berat / penataan bab",         price: 12000,  unit: "page" },
-      { id: "convert",    name: "Konversi tesis/disertasi/laporan penelitian menjadi buku", price: 1500000, unit: "flat" },
-      { id: "translate",  name: "Terjemahan ke Bahasa Inggris",         price: 95000,  unit: "page" },
-      { id: "illus",      name: "Ilustrasi/infografis (per 5 gambar)",  price: 350000, unit: "flat" }
+      { id: "hki",        name: "Pendaftaran HKI (hak cipta)", unit: "flat" },
+      { id: "similarity", name: "Cek similarity + laporan",  unit: "flat" },
+      { id: "doi",        name: "DOI buku", unit: "flat" },
+      { id: "heavyedit",  name: "Editing berat / penataan bab",  unit: "page" },
+      { id: "convert",    name: "Konversi tesis/disertasi/laporan penelitian menjadi buku", unit: "flat" },
+      { id: "translate",  name: "Terjemahan ke Bahasa Inggris",  unit: "page" },
+      { id: "illus",      name: "Ilustrasi/infografis (per 5 gambar)", unit: "flat" }
     ],
     print: { base: 6000, perPageBW: 110, perPageColor: 600, hardcover: 22000, extraLayoutPerPage: 2500 },
     installment: {
@@ -108,6 +110,7 @@ window.IGV_DATA = {
         { id: "call",    label: "Call for Chapter", show: true },
         { id: "lacak",   label: "Lacak Naskah",     show: true },
         { id: "kirim",   label: "Kirim Naskah",     show: true },
+        { id: "legalitas", label: "Legalitas",      show: true },
         { id: "faq",     label: "FAQ",              show: true }
       ],
       portalLink: true,
@@ -115,13 +118,13 @@ window.IGV_DATA = {
     },
 
     hero: {
-      eyebrow: "Penerbit buku akademik · ISBN Perpusnas RI",
-      title: "Naskah Anda layak menjadi *buku ber-ISBN* yang terhitung di BKD dan PAK.",
+      eyebrow: "Penerbit buku akademik dan umum",
+      title: "Naskah Anda layak menjadi *buku terbit resmi* yang terhitung di BKD dan PAK.",
       lead: "{nama} menerbitkan buku ajar, referensi, monograf, dan book chapter untuk dosen dan peneliti. Harga terbuka sejak awal, angka kredit bisa disimulasikan, dan setiap tahap naskah bisa Anda lacak sendiri.",
       tryLabel: "Coba ketik judul naskah Anda, lalu lihat sampul dan halaman katalognya",
       sampleTitle: "Asuhan Keperawatan Ibu Hamil dengan Preeklamsia",
       sampleAuthor: "Nama Anda, M.Kep.",
-      facts: ["ISBN resmi Perpusnas", "Cicilan 3× tanpa bunga", "Royalti 20%", "Garansi ISBN atau uang kembali"]
+      facts: ["Tercatat di Perpustakaan Nasional", "Cicilan 3× tanpa bunga", "Royalti 20%", "Telaah naskah gratis"]
     },
 
     profil: {
@@ -149,7 +152,7 @@ window.IGV_DATA = {
         { title: "Harga terbuka", text: "Kalkulator menunjukkan rincian biaya per item. Tidak ada biaya tersembunyi setelah kontrak ditandatangani." },
         { title: "Reviewer sebidang", text: "Paket Unggulan ditelaah oleh reviewer dari rumpun ilmu yang sama, lengkap dengan surat keterangan untuk berkas PAK." },
         { title: "Cicilan 3× tanpa bunga", text: "Bayar bertahap sesuai kemajuan naskah: saat kontrak, saat proof, dan sebelum cetak." },
-        { title: "Garansi ISBN", text: "Naskah yang lolos telaah redaksi dijamin mendapat ISBN. Jika tidak, biaya penerbitan dikembalikan penuh." }
+        { title: "Telaah naskah gratis", text: "Setiap naskah ditelaah redaksi tanpa biaya. Anda tahu sejak awal apa yang perlu diperbaiki agar layak terbit dan memenuhi ketentuan Perpustakaan Nasional." }
       ]
     },
 
@@ -163,7 +166,9 @@ window.IGV_DATA = {
         { tag: "Penelitian", title: "Monograf", text: "Pembahasan tuntas satu topik penelitian yang spesifik, cocok sebagai luaran hibah." },
         { tag: "Kolaborasi", title: "Book Chapter", text: "Satu bab dalam buku bunga rampai bersama penulis dari berbagai kampus." },
         { tag: "Konversi", title: "Tesis & Disertasi jadi Buku", text: "Kami bantu menulis ulang karya ilmiah menjadi buku yang memenuhi syarat ISBN." },
-        { tag: "Pendidikan", title: "Modul & Panduan Praktikum", text: "Modul laboratorium, panduan klinik, dan buku kerja mahasiswa." },
+        { tag: "Pendidikan", title: "Buku Panduan untuk Umum", text: "Panduan klinik dan buku kerja yang diedarkan untuk umum. Modul atau diktat internal kampus tidak dapat diberi ISBN." },
+        { tag: "Umum", title: "Fiksi & Nonfiksi Populer", text: "Novel, kumpulan cerpen, puisi, memoar, dan biografi yang diterbitkan dan dijual untuk umum." },
+        { tag: "Umum", title: "Buku Anak & Buku Saku PkM", text: "Buku cerita bergambar, buku aktivitas, dan buku saku edukasi masyarakat sebagai luaran pengabdian." },
         { tag: "Pendukung", title: "HKI, Similarity, DOI", text: "Pendaftaran hak cipta ke DJKI, laporan similarity, dan DOI untuk buku." },
         { tag: "Institusi", title: "Writing Camp Kampus", text: "Pendampingan menulis buku untuk satu fakultas atau program studi, sampai terbit." }
       ]
@@ -189,7 +194,23 @@ window.IGV_DATA = {
       call:    { eyebrow: "Call for Chapter", title: "Kolaborasi lintas kampus yang sedang dibuka.", lead: "Satu bab, satu ISBN, dan biaya yang ringan. Pilih tema yang sesuai bidang Anda." },
       lacak:   { eyebrow: "Lacak Naskah", title: "Di mana naskah saya sekarang?", lead: "Masukkan kode lacak yang Anda terima saat mengirim naskah." },
       kirim:   { eyebrow: "Kirim Naskah", title: "Telaah naskah gratis dalam 2–3 hari kerja.", lead: "Unggah naskah ke Google Drive atau OneDrive, atur aksesnya menjadi \"siapa saja yang memiliki tautan\", lalu tempel tautannya di formulir. Anda langsung mendapat kode lacak." },
+      legalitas: { eyebrow: "Legalitas", title: "Penerbit resmi berbadan hukum.", lead: "Data perusahaan berikut dapat Anda cocokkan sendiri di sistem pemerintah." },
       faq:     { eyebrow: "Tanya jawab", title: "Yang sering ditanyakan dosen.", lead: "" }
+    },
+
+    /* Legalitas perusahaan; baris yang nilainya kosong tidak ditampilkan */
+    legal: {
+      items: [
+        { label: "Badan hukum", value: "{perusahaan}", link: "" },
+        { label: "Nomor Induk Berusaha (NIB)", value: "", link: "" },
+        { label: "SK Pengesahan Kemenkumham", value: "", link: "" },
+        { label: "Akta pendirian", value: "", link: "" },
+        { label: "NPWP perusahaan", value: "", link: "" },
+        { label: "KBLI", value: "", link: "" },
+        { label: "Keanggotaan IKAPI", value: "", link: "" },
+        { label: "Situs resmi", value: "", link: "" }
+      ],
+      note: "Penerbitan mengikuti Peraturan Perpustakaan Nasional No. 11 Tahun 2025 tentang Layanan ISBN, termasuk serah simpan karya ke Perpustakaan Nasional dan perpustakaan provinsi."
     },
 
     privacyNote: "Data Anda hanya dipakai untuk proses penerbitan dan tidak dibagikan ke pihak lain.",
@@ -201,6 +222,22 @@ window.IGV_DATA = {
       note: "Tulis kode lacak naskah pada berita transfer, lalu unggah bukti transfer di Portal Penulis. Redaksi memverifikasi dalam 1×24 jam kerja."
     },
 
+    /* Surat otomatis untuk BKD/PAK. {nama} = nama penerbit. */
+    letters: {
+      city: "Jakarta",
+      signerName: "Nama Direktur, S.E., M.M.",
+      signerTitle: "Direktur",
+      signatureUrl: "",
+      stampUrl: "",
+      loaTitle: "Surat Penerimaan Naskah",
+      loaIntro: "Berdasarkan hasil telaah redaksi, dengan ini kami menyatakan bahwa naskah berikut telah DITERIMA untuk diterbitkan oleh {nama}:",
+      loaAfter: "Naskah tersebut saat ini dalam proses penerbitan menjadi buku ber-ISBN dari Perpustakaan Nasional Republik Indonesia. Surat ini dapat digunakan sebagai bukti kinerja (BKD) selama proses penerbitan berlangsung.",
+      sktTitle: "Surat Keterangan Terbit",
+      sktIntro: "Dengan ini kami menerangkan bahwa buku berikut telah DITERBITKAN oleh {nama}:",
+      sktAfter: "Buku tersebut telah memperoleh ISBN dari Perpustakaan Nasional Republik Indonesia dan tercatat dalam katalog {nama}.",
+      closing: "Demikian surat ini dibuat untuk dipergunakan sebagaimana mestinya."
+    },
+
     portal: {
       title: "Portal Penulis",
       lead: "Pantau naskah, bayar tagihan bertahap, dan kirim revisi dari satu tempat. Masuk cukup dengan email yang Anda pakai saat mengirim naskah, tanpa kata sandi."
@@ -210,6 +247,8 @@ window.IGV_DATA = {
       { q: "Berapa lama sampai buku terbit?", a: "Tergantung paket: 21–30 hari kerja (Esensial), 14–21 hari kerja (Profesional), dan 10–14 hari kerja (Unggulan), dihitung sejak naskah final dan kontrak disetujui. Waktu terbit ISBN dari Perpusnas berada di luar kendali kami, tetapi selalu tampak di dasbor Lacak Naskah." },
       { q: "Apakah buku bisa dipakai untuk BKD dan kenaikan jabatan?", a: "Ya, selama jenis bukunya sesuai (buku ajar, referensi, monograf, atau book chapter) dan terbit ber-ISBN dari penerbit resmi. Gunakan Simulasi Angka Kredit untuk perkiraan nilainya." },
       { q: "Naskah seperti apa yang ditolak untuk ISBN?", a: "Antara lain naskah yang terlalu tipis, kumpulan artikel jurnal atau skripsi yang belum diolah menjadi buku, dan naskah dengan similarity tinggi. Cek Kesiapan Naskah membantu Anda memeriksanya lebih awal." },
+      { q: "Jenis naskah apa yang tidak dapat diterbitkan ber-ISBN?", a: "Menurut ketentuan Perpustakaan Nasional, antara lain modul atau diktat internal kampus, skripsi/tesis/disertasi yang belum diolah menjadi buku, laporan internal, serta antologi yang hanya dibagikan terbatas di komunitas. Buku harus disebarluaskan dan dapat diakses publik." },
+      { q: "Apakah novel dan buku anak bisa diterbitkan di sini?", a: "Bisa, melalui lini buku umum, asalkan buku diterbitkan dan diedarkan untuk umum. Perlu diketahui, buku fiksi dan buku umum pada dasarnya tidak dinilai sebagai karya ilmiah untuk BKD atau PAK." },
       { q: "Bagaimana sistem cicilannya?", a: "40% saat kontrak, 30% saat proof disetujui, dan 30% sebelum naik cetak. Tanpa bunga dan tanpa biaya administrasi." },
       { q: "Bagaimana royalti dibayarkan?", a: "Royalti 20% dari harga jual bersih untuk setiap buku yang terjual melalui jaringan kami, dilaporkan dan dibayarkan setiap semester." },
       { q: "Siapa pemegang hak cipta buku?", a: "Penulis. Penerbit memegang hak terbit sesuai masa kontrak. Pada paket Profesional dan Unggulan kami mendaftarkan hak cipta atas nama penulis ke DJKI." }
@@ -270,6 +309,13 @@ window.IGV_DATA = {
       ],
       d2: [{ id: "f3", kind: "naskah", name: "Bab-Keluarga-Hipertensi.docx", created_at: "2026-11-02" }]
     }
+  },
+
+  demoVerify: {
+    code: "IGV-DEMO", title: "Contoh: Asuhan Keperawatan Maternitas Berbasis Bukti", authors: "Contoh Penulis, M.Kep.; Contoh Anggota, M.Kep.",
+    institution: "Universitas Contoh", book_type: "Buku referensi", status: "terbit",
+    submitted_at: "2026-10-20", accepted_at: "2026-10-23", published_at: "2026-11-20", isbn: "978-634-0000-01-1",
+    loa_valid: true, skt_valid: true
   },
 
   demoCalls: [

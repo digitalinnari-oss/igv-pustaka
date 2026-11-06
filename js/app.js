@@ -36,7 +36,8 @@
     ((D.content.layout || {}).sections || []).forEach((d) => { if (!secs.some((x) => x.id === d.id)) secs.push(d); });
     const main = $("main");
     secs.forEach((x) => { const el = document.getElementById(x.id); main.appendChild(el); el.hidden = !x.show; });
-    const shown = secs.filter((x) => x.show);
+    const legalFilled = ((C.legal || {}).items || []).filter((x) => x && String(x.value || "").trim()).length >= 2;
+    const shown = secs.filter((x) => x.show && (x.id !== "legalitas" || legalFilled));
     const nav = shown.filter((x) => x.id !== "kirim").map((x) => `<li><a href="#${esc(x.id)}">${esc(tx(x.label))}</a></li>`);
     if (L.portalLink !== false) nav.push(`<li><a href="penulis.html">${esc(tx(L.portalLabel || "Portal Penulis"))}</a></li>`);
     const kirim = shown.find((x) => x.id === "kirim");
@@ -44,6 +45,7 @@
     $("#navLinks").innerHTML = nav.join("");
     const foot = shown.filter((x) => x.id !== "kirim").slice(0, 5).map((x) => `<li><a href="#${esc(x.id)}">${esc(tx(x.label))}</a></li>`);
     if (L.portalLink !== false) foot.push(`<li><a href="penulis.html">${esc(tx(L.portalLabel || "Portal Penulis"))}</a></li>`);
+    foot.push(`<li><a href="verifikasi.html">Verifikasi dokumen</a></li>`);
     foot.push(`<li><a href="admin.html">Masuk redaksi</a></li>`);
     $("#footLinks").innerHTML = foot.join("");
     $$(".hero .btn-row a[href='#kirim']").forEach((a) => (a.hidden = !kirim));
@@ -77,6 +79,13 @@
     const steps = (C.alur || {}).steps || [];
     $("#alurList").innerHTML = steps.map((s) => `<li><b>${esc(tx(s.title))}</b><span>${esc(tx(s.text))}</span></li>`).join("");
     $("#alurList").style.gridTemplateColumns = window.innerWidth > 960 ? `repeat(${Math.min(Math.max(steps.length, 1), 6)},minmax(0,1fr))` : "";
+    const LG = C.legal || {}, filled = (LG.items || []).filter((x) => x && String(x.value || "").trim());
+    const legalOn = filled.length >= 2 && !((C.layout || {}).sections || []).some((x) => x.id === "legalitas" && x.show === false);
+    $("#legalitas").hidden = !legalOn;
+    $("#legalGrid").innerHTML = filled.map((x) => `<div class="legal-item"><span class="lbl">${esc(tx(x.label))}</span><b style="font-variant-numeric:tabular-nums">${esc(tx(x.value))}</b>${x.link ? `<a href="${esc(x.link)}" target="_blank" rel="noopener">Cek keabsahan ↗</a>` : ""}</div>`).join("");
+    $("#legalNote").textContent = tx(LG.note || "");
+    const nib = filled.find((x) => /NIB/i.test(x.label));
+    $("#legalLine").textContent = nib ? "NIB " + tx(nib.value) : ""; $("#legalLine").hidden = !nib;
     $("#faqList").innerHTML = (C.faq || []).map((f) => `<details><summary>${esc(tx(f.q))}</summary><p>${esc(tx(f.a))}</p></details>`).join("");
 
     $("#waText").textContent = (B.whatsapp || "").replace(/^62/, "0");
@@ -111,8 +120,10 @@
       <div class="price mono">${rp(ch.price)}<br><small>per penulis per bab</small></div>
       <ul>${(ch.features || []).map((f) => `<li>${esc(tx(f))}</li>`).join("")}</ul>
       <a class="btn btn-ghost" href="#call">Lihat tema yang dibuka</a>`;
-    $("#addonTable").innerHTML = (P.addons || []).map((a) => `<tr><td>${esc(a.name)}</td><td class="num">${rp(a.price)}${unitTxt[a.unit] || ""}</td></tr>`).join("")
-      + `<tr><td>Cetak tambahan (softcover, hitam-putih)</td><td class="num">mulai ${rp(unitPrint(100, "soft", "bw"))} / eks</td></tr>`;
+    const incIn = (id) => pk.filter((p) => (p.includes || []).includes(id)).map((p) => p.name);
+    $("#addonTable").innerHTML = (P.addons || []).map((a) => { const inc = incIn(a.id);
+      return `<tr><td>${esc(a.name)}</td><td>${inc.length ? `<span class="badge ok">Termasuk paket ${esc(inc.join(", "))}</span>` : `<span class="note">Dapat ditambahkan, harga disampaikan redaksi</span>`}</td></tr>`; }).join("")
+      + `<tr><td>Cetak tambahan (softcover, hitam-putih)</td><td>mulai <span class="mono">${rp(unitPrint(100, "soft", "bw"))}</span> / eks</td></tr>`;
     $("#installNote").textContent = tx(inst.note) + " Harga dapat berubah; harga final tercantum di kontrak.";
 
     const keepC = $("#cPkg").value, keepF = $("#fPkg").value;
@@ -123,7 +134,7 @@
     $("#cPkg").value = pk.some((p) => p.id === keepC) ? keepC : def;
     $("#fPkg").value = keepF && $(`#fPkg option[value="${CSS.escape(keepF)}"]`) ? keepF : def;
     $("#cAddons").innerHTML = (P.addons || []).map((a) => `
-      <label class="check" data-id="${esc(a.id)}"><input type="checkbox" value="${esc(a.id)}"><span>${esc(a.name)}<br><small class="inc"></small></span><small class="mono">${rp(a.price)}${unitTxt[a.unit] || ""}</small></label>`).join("");
+      <label class="check" data-id="${esc(a.id)}"><input type="checkbox" value="${esc(a.id)}"><span>${esc(a.name)}<br><small class="inc"></small></span><small class="note">harga dari redaksi</small></label>`).join("");
   }
 
   /* ================= KALKULATOR ================= */
@@ -148,15 +159,21 @@
     $$("#cAddons .check").forEach((lab) => {
       const id = lab.dataset.id, a = (P.addons || []).find((x) => x.id === id), inp = $("input", lab);
       const isInc = inc.includes(id);
-      lab.classList.toggle("included", isInc); inp.disabled = isInc; if (isInc) inp.checked = true;
+      lab.classList.toggle("included", isInc); inp.disabled = isInc;
+      if (isInc) { inp.checked = true; inp.dataset.auto = "1"; } else if (inp.dataset.auto) { inp.checked = false; delete inp.dataset.auto; }
       $(".inc", lab).textContent = isInc ? "Sudah termasuk paket" : "";
-      if (inp.checked && !isInc) { rows.push([a.name, a.unit === "page" ? a.price * pages : +a.price]); chosen.push(a.name); }
+      $("small.note", lab).textContent = isInc ? "termasuk" : "harga dari redaksi";
+      if (inp.checked && !isInc) chosen.push(a.name);
     });
     const total = rows.reduce((s, r) => s + r[1], 0);
     const times = instTimes();
-    $("#cRows").innerHTML = rows.map((r) => `<div class="row"><span>${esc(r[0])}</span><span>${rp(r[1])}</span></div>`).join("");
+    const incNames = (P.addons || []).filter((a) => inc.includes(a.id)).map((a) => a.name);
+    if (incNames.length) rows.push([`Sudah termasuk: ${incNames.join(", ")}`, 0]);
+    $("#cRows").innerHTML = rows.map((r) => `<div class="row"><span>${esc(r[0])}</span><span>${r[1] ? rp(r[1]) : "Rp0"}</span></div>`).join("")
+      + (chosen.length ? `<div class="row"><span>Layanan tambahan: ${esc(chosen.join(", "))}</span><span class="note">dikonfirmasi redaksi</span></div>` : "");
     $("#cTotal").textContent = rp(total); $("#cBig").textContent = rp(total);
-    $("#cInstall").textContent = times > 1 ? `Atau cicil ${times}× sekitar ${rp(total / times)} per tahap.` : "";
+    $("#cInstall").textContent = (times > 1 ? `Atau cicil ${times}× sekitar ${rp(total / times)} per tahap.` : "")
+      + (chosen.length ? " Total belum termasuk layanan tambahan pilihan Anda; redaksi menyampaikan harganya setelah telaah naskah." : "");
     lastCalc = { p, pages, copies, total, chosen };
   }
 
@@ -248,7 +265,7 @@
   $("#cApply").addEventListener("click", () => {
     const c = lastCalc; if (!c) return;
     $("#fPkg").value = c.p.id; $("#fPages").value = c.pages;
-    $("#fNotes").value = `Estimasi kalkulator: paket ${c.p.name}, ${c.pages} hlm, ${c.copies} eks, ${state.cover === "hard" ? "hardcover" : "softcover"}, isi ${state.color === "color" ? "berwarna" : "hitam-putih"}${c.chosen.length ? ", tambahan: " + c.chosen.join(", ") : ""}. Total ${rp(c.total)}.`;
+    $("#fNotes").value = `Estimasi kalkulator: paket ${c.p.name}, ${c.pages} hlm, ${c.copies} eks, ${state.cover === "hard" ? "hardcover" : "softcover"}, isi ${state.color === "color" ? "berwarna" : "hitam-putih"}${c.chosen.length ? ", minta penawaran layanan tambahan: " + c.chosen.join(", ") : ""}. Estimasi paket & cetak ${rp(c.total)}.`;
     goForm();
   });
   $("#plans").addEventListener("click", (e) => { const a = e.target.closest("[data-pick]"); if (a) $("#fPkg").value = a.dataset.pick; });
